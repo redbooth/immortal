@@ -37,7 +37,7 @@ module Immortal
     end
 
     def immortal_delete_all(*args)
-      unscoped.update_all ["deleted = ?", true]
+      unscoped.update_all :deleted => true
     end
 
     def delete_all!(*args)
@@ -49,7 +49,7 @@ module Immortal
   module InstanceMethods
     def self.included(base)
       base.class_eval do
-        default_scope where(["deleted IS NULL OR deleted = ?", false])
+        default_scope where(arel_table[:deleted].eq(nil).or(arel_table[:deleted].eq(false)))
         alias :mortal_destroy :destroy
         alias :destroy :immortal_destroy
       end
@@ -66,13 +66,13 @@ module Immortal
     end
 
     def destroy_without_callbacks(*args)
-      self.class.unscoped.update_all ["deleted = ?", true], "id = #{self.id}"
+      self.class.unscoped.update_all({ :deleted => true }, "id = #{self.id}")
       reload
       freeze
     end
 
     def recover!
-      self.class.unscoped.update_all ["deleted = ?", false], "id = #{self.id}"
+      self.class.unscoped.update_all({ :deleted => false }, "id = #{self.id}")
       reload
     end
 
