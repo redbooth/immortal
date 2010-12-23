@@ -27,6 +27,18 @@ begin
       t.boolean :deleted, :default => false
       t.timestamps
     end
+    create_table :immortal_joins do |t|
+      t.integer :immortal_model_id
+      t.integer :immortal_node_id
+      t.boolean :deleted, :default => false
+      t.timestamps
+    end
+    create_table :immortal_nodes do |t|
+      t.string :title
+      t.integer :value
+      t.boolean :deleted, :default => false
+      t.timestamps
+    end
   end
 ensure
   $stdout = old_stdout
@@ -34,6 +46,9 @@ end
 
 class ImmortalModel < ActiveRecord::Base
   include Immortal
+
+  has_many :immortal_nodes, :through => :immortal_joins
+  has_many :immortal_joins
 
   attr_accessor :before_d, :after_d, :before_u, :after_u
 
@@ -59,4 +74,18 @@ class ImmortalModel < ActiveRecord::Base
     @before_u = true
   end
 
+end
+
+class ImmortalJoin < ActiveRecord::Base
+  include Immortal
+
+  belongs_to :immortal_model
+  belongs_to :immortal_node
+end
+
+class ImmortalNode < ActiveRecord::Base
+  include Immortal
+
+  has_many :immortal_joins
+  has_many :immortal_models, :through => :immortal_joins
 end
