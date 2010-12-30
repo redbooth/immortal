@@ -41,3 +41,7 @@ If you want to improve immortal
 2. Create a topic branch `git checkout -b my_feature`
 3. Push it! `git push origin my_feature`
 4. Open a pull request
+
+## CHANGELOG
+
+- 0.1.1 fix behavior with `has_many :through` associations
