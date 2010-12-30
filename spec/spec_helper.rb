@@ -3,6 +3,7 @@ require 'rspec'
 require 'lib/immortal'
 require 'active_record'
 require 'sqlite3'
+require 'logger'
 
 RSpec.configure do |config|
   config.before(:each) do
@@ -15,6 +16,7 @@ end
 
 
 ActiveRecord::Base.establish_connection(:adapter => "sqlite3", :database => ":memory:")
+ActiveRecord::Base.logger = Logger.new(STDOUT) if ENV['DEBUG']
 
 old_stdout = $stdout
 $stdout = StringIO.new
