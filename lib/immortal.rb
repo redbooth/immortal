@@ -48,7 +48,7 @@ module Immortal
     # the 'not deleted' scope, otherwise it will take all the rows
     # from the join model
     def has_many(association_id, options = {}, &extension)
-      if options.key?(:through)
+      if options.key?(:through) and options[:through].to_s.classify.constantize.arel_table[:deleted]
         conditions = "#{options[:through].to_s.pluralize}.deleted IS NULL OR #{options[:through].to_s.pluralize}.deleted = ?"
         options[:conditions] = ["(" + [options[:conditions], conditions].compact.join(") AND (") + ")", false]
       end
