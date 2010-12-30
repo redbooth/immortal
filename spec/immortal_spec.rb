@@ -179,20 +179,14 @@ describe Immortal do
 
   it "should consider an Many-to-many association with through as deleted when the join is deleted." do
     @n = ImmortalNode.create! :title => 'testing association'
-    @join = ImmortalJoin.create! :immortal_model_id => @m.id, :immortal_node_id => @n.id
+    @join = ImmortalJoin.create! :immortal_model => @m, :immortal_node => @n
 
-    @m.reload
     @m.immortal_nodes.count.should == 1
-
-    @n.reload
     @n.immortal_models.count.should == 1
 
     @join.destroy
 
-    @m.reload
     @m.immortal_nodes.count.should == 0
-
-    @n.reload
     @n.immortal_models.count.should == 0
   end
 end

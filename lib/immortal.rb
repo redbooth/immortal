@@ -44,6 +44,17 @@ module Immortal
       unscoped.mortal_delete_all
     end
 
+    # In has_many :through => join_model we have to explicitly add
+    # the 'not deleted' scope, otherwise it will take all the rows
+    # from the join model
+    def has_many(association_id, options = {}, &extension)
+      if options.key?(:through)
+        conditions = "#{options[:through].to_s.pluralize}.deleted IS NULL OR #{options[:through].to_s.pluralize}.deleted = ?"
+        options[:conditions] = ["(" + [options[:conditions], conditions].compact.join(") AND (") + ")", false]
+      end
+      super
+    end
+
   end
 
   module InstanceMethods
