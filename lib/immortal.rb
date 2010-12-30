@@ -60,7 +60,7 @@ module Immortal
   module InstanceMethods
     def self.included(base)
       base.class_eval do
-        default_scope where(arel_table[:deleted].eq(nil).or(arel_table[:deleted].eq(false)))
+        default_scope where(arel_table[:deleted].eq(nil).or(arel_table[:deleted].eq(false))) if arel_table[:deleted]
         alias :mortal_destroy :destroy
         alias :destroy :immortal_destroy
       end
