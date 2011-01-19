@@ -44,6 +44,9 @@ If you want to improve immortal
 
 ## CHANGELOG
 
+- 0.1.4 fix bug where ALL records of any dependent associations were
+  immortally deleted if assocation has :dependant => :delete_all option
+  set
 - 0.1.3 fix bug where join model is not immortal
 - 0.1.2 fix loading issue when the `deleted` column doesn't exist (or even the table)
 - 0.1.1 fix behavior with `has_many :through` associations
