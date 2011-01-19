@@ -41,7 +41,7 @@ module Immortal
     end
 
     def delete_all!(*args)
-      unscoped.mortal_delete_all
+      unscoped.mortal_delete_all(*args)
     end
 
     # In has_many :through => join_model we have to explicitly add
@@ -66,17 +66,17 @@ module Immortal
       end
     end
 
-    def immortal_destroy(*args)
+    def immortal_destroy
       run_callbacks :destroy do
-        destroy_without_callbacks(*args)
+        destroy_without_callbacks
       end
     end
 
-    def destroy!(*args)
+    def destroy!
       mortal_destroy
     end
 
-    def destroy_without_callbacks(*args)
+    def destroy_without_callbacks
       self.class.unscoped.update_all({ :deleted => true }, "id = #{self.id}")
       reload
       freeze
