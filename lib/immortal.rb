@@ -36,8 +36,8 @@ module Immortal
       only_deleted.find(*args)
     end
 
-    def immortal_delete_all(*args)
-      unscoped.update_all :deleted => true
+    def immortal_delete_all(conditions = nil)
+      unscoped.update_all({:deleted => 1}, conditions)
     end
 
     def delete_all!(*args)

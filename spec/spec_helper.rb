@@ -46,11 +46,25 @@ ensure
   $stdout = old_stdout
 end
 
+class ImmortalJoin < ActiveRecord::Base
+  include Immortal
+
+  belongs_to :immortal_model
+  belongs_to :immortal_node
+end
+
+class ImmortalNode < ActiveRecord::Base
+  include Immortal
+
+  has_many :immortal_joins
+  has_many :immortal_models, :through => :immortal_joins
+end
+
 class ImmortalModel < ActiveRecord::Base
   include Immortal
 
-  has_many :immortal_nodes, :through => :immortal_joins
-  has_many :immortal_joins
+  has_many :immortal_nodes, :through => :immortal_joins, :dependent => :destroy
+  has_many :immortal_joins, :dependent => :delete_all
 
   attr_accessor :before_d, :after_d, :before_u, :after_u
 
@@ -78,16 +92,3 @@ class ImmortalModel < ActiveRecord::Base
 
 end
 
-class ImmortalJoin < ActiveRecord::Base
-  include Immortal
-
-  belongs_to :immortal_model
-  belongs_to :immortal_node
-end
-
-class ImmortalNode < ActiveRecord::Base
-  include Immortal
-
-  has_many :immortal_joins
-  has_many :immortal_models, :through => :immortal_joins
-end
