@@ -19,4 +19,5 @@ Gem::Specification.new do |s|
   s.add_dependency 'activerecord', '~> 3.0.3'
   s.add_development_dependency 'rspec', '~> 2.3.0'
   s.add_development_dependency 'sqlite3-ruby', '~> 1.3.2'
+  s.add_development_dependency 'ruby-debug', '~> 0.10.4'
 end
