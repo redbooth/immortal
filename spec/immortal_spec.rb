@@ -181,13 +181,13 @@ describe Immortal do
     @n = ImmortalNode.create! :title => 'testing association'
     @join = ImmortalJoin.create! :immortal_model => @m, :immortal_node => @n
 
-    @m.immortal_nodes.count.should == 1
-    @n.immortal_models.count.should == 1
+    @m.nodes.count.should == 1
+    @n.models.count.should == 1
 
     @join.destroy
 
-    @m.immortal_nodes.count.should == 0
-    @n.immortal_models.count.should == 0
+    @m.nodes.count.should == 0
+    @n.models.count.should == 0
   end
 
   it "should only immortally delete scoped associations, NOT ALL RECORDS" do
