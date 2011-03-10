@@ -44,6 +44,8 @@ If you want to improve immortal
 
 ## CHANGELOG
 
+- 0.1.5 Add "without deleted" scope to join model by overriding HasManyThroughAssociation#construct_conditions
+    rather than simply adding to has_many conditions.
 - 0.1.4 fix bug where ALL records of any dependent associations were
   immortally deleted if assocation has :dependant => :delete_all option
   set
