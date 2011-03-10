@@ -1,9 +1,28 @@
+require 'immortal/has_many_through_mortal_association'
+
 module Immortal
+
   def self.included(base)
     base.send :extend, ClassMethods
     base.send :include, InstanceMethods
     base.class_eval do
       class << self
+        # In has_many :through => join_model we have to explicitly add
+        # the 'not deleted' scope, otherwise it will take all the rows
+        # from the join model
+        def has_many_mortal(association_id, options = {}, &extension)
+          has_many_immortal(association_id, options, &extension).tap do
+            if options[:through] and reflections[options[:through]] and reflections[options[:through]].class_name.classify.constantize.arel_table[:deleted]
+              reflection = reflect_on_association(association_id)
+              collection_reader_method(reflection, Immortal::HasManyThroughMortalAssociation)
+              collection_accessor_methods(reflection, Immortal::HasManyThroughMortalAssociation, false)
+            end
+          end
+        end
+
+        alias_method :has_many_immortal, :has_many
+        alias_method :has_many, :has_many_mortal
+
         alias :mortal_delete_all :delete_all
         alias :delete_all :immortal_delete_all
       end
@@ -11,6 +30,10 @@ module Immortal
   end
 
   module ClassMethods
+
+    def immortal?
+      self.included_modules.include?(::Immortal::InstanceMethods)
+    end
 
     def with_deleted
       unscoped
@@ -42,17 +65,6 @@ module Immortal
 
     def delete_all!(*args)
       unscoped.mortal_delete_all(*args)
-    end
-
-    # In has_many :through => join_model we have to explicitly add
-    # the 'not deleted' scope, otherwise it will take all the rows
-    # from the join model
-    def has_many(association_id, options = {}, &extension)
-      if options.key?(:through) and reflections[options[:through]] and reflections[options[:through]].class_name.classify.constantize.arel_table[:deleted]
-        conditions = "#{reflections[options[:through]].table_name}.deleted IS NULL OR #{reflections[options[:through]].table_name}.deleted = ?"
-        options[:conditions] = ["(" + [options[:conditions], conditions].compact.join(") AND (") + ")", false]
-      end
-      super
     end
 
   end

@@ -205,4 +205,9 @@ describe Immortal do
     [n1,n2,j1,j2].all? {|r| r.reload.deleted?}.should be_true
     [n3,j3].all? {|r| !r.reload.deleted?}.should be_true
   end
+
+  it "should properly apply conditions when generating joins" do
+    sql = 'SELECT "immortal_nodes".* FROM "immortal_nodes" INNER JOIN "immortal_joins" ON "immortal_nodes"."id" = "immortal_joins"."immortal_node_id" INNER JOIN "immortal_models" ON "immortal_models"."id" = "immortal_joins"."immortal_model_id" WHERE (("immortal_nodes"."deleted" IS NULL OR "immortal_nodes"."deleted" = \'f\'))'
+    ImmortalNode.joins(:immortal_models).to_sql.should == sql
+  end
 end
