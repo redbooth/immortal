@@ -206,8 +206,42 @@ describe Immortal do
     [n3,j3].all? {|r| !r.reload.deleted?}.should be_true
   end
 
-  it "should properly apply conditions when generating joins" do
-    sql = 'SELECT "immortal_nodes".* FROM "immortal_nodes" INNER JOIN "immortal_joins" ON "immortal_nodes"."id" = "immortal_joins"."immortal_node_id" INNER JOIN "immortal_models" ON "immortal_models"."id" = "immortal_joins"."immortal_model_id" WHERE (("immortal_nodes"."deleted" IS NULL OR "immortal_nodes"."deleted" = \'f\'))'
-    ImmortalNode.joins(:immortal_models).to_sql.should == sql
+  it "should properly generate joins" do
+    join_sql = 'INNER JOIN "immortal_joins" ON "immortal_nodes"."id" = "immortal_joins"."immortal_node_id" INNER JOIN "immortal_models" ON "immortal_models"."id" = "immortal_joins"."immortal_model_id"'
+    ImmortalNode.joins(:immortal_models).to_sql.should include(join_sql)
+  end
+
+  it "should not unscope associations when using with_deleted scope" do
+    m1 = ImmortalModel.create! :title => 'previously created model'
+    n1 = ImmortalNode.create! :title => 'previously created association'
+    j1 = ImmortalJoin.create! :immortal_model => m1, :immortal_node => n1
+
+    @n = ImmortalNode.create! :title => 'testing association'
+    @join = ImmortalJoin.create! :immortal_model => @m, :immortal_node => @n
+
+    @join.destroy
+
+    @m.nodes.count.should == 0
+    @n.joins.count.should == 0
+
+    @m.nodes.with_deleted.count.should == 1
+    @n.joins.with_deleted.count.should == 1
+  end
+
+  it "should not unscope associations when using only_deleted scope" do
+    m1 = ImmortalModel.create! :title => 'previously created model'
+    n1 = ImmortalNode.create! :title => 'previously created association'
+    j1 = ImmortalJoin.create! :immortal_model => m1, :immortal_node => n1
+
+    @n = ImmortalNode.create! :title => 'testing association'
+    @join = ImmortalJoin.create! :immortal_model => @m, :immortal_node => @n
+
+    @join.destroy
+
+    @m.nodes.count.should == 0
+    @n.joins.count.should == 0
+
+    @m.nodes.only_deleted.count.should == 1
+    @n.joins.only_deleted.count.should == 1
   end
 end

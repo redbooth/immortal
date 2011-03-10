@@ -36,11 +36,15 @@ module Immortal
     end
 
     def with_deleted
-      unscoped
+      except(:where).where(filter_undeleted_where_clauses.join(' AND '))
     end
 
     def only_deleted
-      unscoped.where(:deleted => true)
+      deleted_clause = arel_table[:deleted].eq(true)
+      where_sql_clauses = filter_undeleted_where_clauses
+      where_sql_clauses.concat unscoped.where(deleted_clause).where_clauses
+
+      except(:where).where(where_sql_clauses.join(" AND "))
     end
 
     def count_with_deleted(*args)
@@ -65,6 +69,19 @@ module Immortal
 
     def delete_all!(*args)
       unscoped.mortal_delete_all(*args)
+    end
+
+    private
+
+    def filter_undeleted_where_clauses
+      where_clauses = scoped.arel.send(:where_clauses)
+
+      #Yes it's an ugly hack but I couldn't find a cleaner way of doing this
+      filtered_clauses = where_clauses.dup.map do |clause| 
+        clause.gsub(/(\s+AND\s+)?\("(\w+)"."?deleted"?\sIS\sNULL[^\)]+\)/, '')
+      end.map {|cl| cl.gsub("()", '')}.select {|cl| !cl.empty?}
+
+      filtered_clauses
     end
 
   end
