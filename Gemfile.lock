@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    immortal (0.1.5)
+    immortal (0.1.6)
       activerecord (~> 3.0.5)
 
 GEM
