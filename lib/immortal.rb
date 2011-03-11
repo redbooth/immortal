@@ -86,7 +86,7 @@ module Immortal
 
       #Yes it's an ugly hack but I couldn't find a cleaner way of doing this
       filtered_clauses = where_clauses.dup.map do |clause| 
-        clause.gsub(/(\s+AND\s+)?\("(\w+)"."?deleted"?\sIS\sNULL[^\)]+\)/, '')
+        clause.gsub(/(\s+AND\s+)?\("?`?(\w+)`?"?."?`?deleted`?"?\sIS\sNULL[^\)]+\)/, '')
       end.map {|cl| cl.gsub("()", '')}.select {|cl| !cl.empty?}
 
       filtered_clauses
