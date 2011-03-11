@@ -71,6 +71,14 @@ module Immortal
       unscoped.mortal_delete_all(*args)
     end
 
+    def undeleted_clause_sql
+      unscoped.where(arel_table[:deleted].eq(nil).or(arel_table[:deleted].eq(false))).where_clauses.first
+    end
+
+    def deleted_clause_sql
+      unscoped.where(arel_table[:deleted].eq(true)).where_clauses.first
+    end
+
     private
 
     def filter_undeleted_where_clauses
