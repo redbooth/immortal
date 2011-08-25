@@ -1,5 +1,3 @@
-require 'immortal/has_many_through_mortal_association'
-
 module Immortal
 
   def self.included(base)
@@ -12,11 +10,7 @@ module Immortal
         # from the join model
         def has_many_mortal(association_id, options = {}, &extension)
           has_many_immortal(association_id, options, &extension).tap do
-            if options[:through] and reflections[options[:through]] and reflections[options[:through]].class_name.classify.constantize.arel_table[:deleted]
-              reflection = reflect_on_association(association_id)
-              collection_reader_method(reflection, Immortal::HasManyThroughMortalAssociation)
-              collection_accessor_methods(reflection, Immortal::HasManyThroughMortalAssociation, false)
-            end
+            # FIXME This must be re-implemented after the ActiveRecord internals refactor in 3.1
           end
         end
 
