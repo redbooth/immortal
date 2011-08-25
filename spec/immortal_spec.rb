@@ -207,8 +207,11 @@ describe Immortal do
   end
 
   it "should properly generate joins" do
-    join_sql = 'INNER JOIN "immortal_joins" ON "immortal_nodes"."id" = "immortal_joins"."immortal_node_id" INNER JOIN "immortal_models" ON "immortal_models"."id" = "immortal_joins"."immortal_model_id"'
-    ImmortalNode.joins(:immortal_models).to_sql.should include(join_sql)
+    join_sql1 = 'INNER JOIN "immortal_joins" ON "immortal_joins"."immortal_node_id" = "immortal_nodes"."id"'
+    join_sql2 = 'INNER JOIN "immortal_models" ON "immortal_models"."id" = "immortal_joins"."immortal_model_id"'
+    generated_sql = ImmortalNode.joins(:immortal_models).to_sql
+    generated_sql.should include(join_sql1)
+    generated_sql.should include(join_sql2)
   end
 
   it "should not unscope associations when using with_deleted scope" do
