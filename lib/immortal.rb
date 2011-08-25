@@ -30,7 +30,7 @@ module Immortal
     end
 
     def with_deleted
-      except(:where).where(filter_undeleted_where_clauses.join(' AND '))
+      unscoped.where(filter_undeleted_where_clauses.join(' AND '))
     end
 
     def only_deleted
@@ -38,7 +38,7 @@ module Immortal
       where_sql_clauses = filter_undeleted_where_clauses
       where_sql_clauses.concat unscoped.where(deleted_clause).wheres.collect(&:value)
 
-      except(:where).where(where_sql_clauses.join(" AND "))
+      unscoped.where(where_sql_clauses.join(" AND "))
     end
 
     def count_with_deleted(*args)
