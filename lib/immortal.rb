@@ -36,7 +36,7 @@ module Immortal
     def only_deleted
       deleted_clause = arel_table[:deleted].eq(true)
       where_sql_clauses = filter_undeleted_where_clauses
-      where_sql_clauses.concat unscoped.where(deleted_clause).wheres.collect(&:value)
+      where_sql_clauses.concat unscoped.where(deleted_clause).constraints.collect(&:to_sql)
 
       unscoped.where(where_sql_clauses.join(" AND "))
     end
@@ -66,17 +66,17 @@ module Immortal
     end
 
     def undeleted_clause_sql
-      unscoped.where(arel_table[:deleted].eq(nil).or(arel_table[:deleted].eq(false))).wheres.first.value
+      unscoped.where(arel_table[:deleted].eq(nil).or(arel_table[:deleted].eq(false))).constraints.first.to_sql
     end
 
     def deleted_clause_sql
-      unscoped.where(arel_table[:deleted].eq(true)).wheres.first.value
+      unscoped.where(arel_table[:deleted].eq(true)).constraints.first.to_sql
     end
 
     private
 
     def filter_undeleted_where_clauses
-      where_clauses = scoped.arel.wheres.collect(&:value)
+      where_clauses = scoped.arel.constraints.collect(&:to_sql)
 
       #Yes it's an ugly hack but I couldn't find a cleaner way of doing this
       filtered_clauses = where_clauses.dup.map do |clause| 
