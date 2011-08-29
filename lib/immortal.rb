@@ -66,11 +66,11 @@ module Immortal
     end
 
     def undeleted_clause_sql
-      unscoped.where(arel_table[:deleted].eq(nil).or(arel_table[:deleted].eq(false))).where_clauses.first
+      unscoped.where(arel_table[:deleted].eq(nil).or(arel_table[:deleted].eq(false))).wheres.first.value
     end
 
     def deleted_clause_sql
-      unscoped.where(arel_table[:deleted].eq(true)).where_clauses.first
+      unscoped.where(arel_table[:deleted].eq(true)).wheres.first.value
     end
 
     private
