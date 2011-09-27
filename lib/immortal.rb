@@ -33,6 +33,10 @@ module Immortal
       except(:where).where(filter_undeleted_where_clauses.join(' AND '))
     end
 
+    def exists?(id = false)
+      where(:deleted => false).exists?(id)
+    end
+
     def only_deleted
       deleted_clause = arel_table[:deleted].eq(true)
       where_sql_clauses = filter_undeleted_where_clauses
