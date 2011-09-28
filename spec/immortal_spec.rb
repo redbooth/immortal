@@ -198,37 +198,4 @@ describe Immortal do
     generated_sql.should include(join_sql2)
   end
 
-  it "should not unscope associations when using with_deleted scope" do
-    m1 = ImmortalModel.create! :title => 'previously created model'
-    n1 = ImmortalNode.create! :title => 'previously created association'
-    j1 = ImmortalJoin.create! :immortal_model => m1, :immortal_node => n1
-
-    @n = ImmortalNode.create! :title => 'testing association'
-    @join = ImmortalJoin.create! :immortal_model => @m, :immortal_node => @n
-
-    @join.destroy
-
-    @m.nodes.count.should == 0
-    @n.joins.count.should == 0
-
-    @m.nodes.count_with_deleted.should == 1
-    @n.joins.count_with_deleted.should == 1
-  end
-
-  it "should not unscope associations when using only_deleted scope" do
-    m1 = ImmortalModel.create! :title => 'previously created model'
-    n1 = ImmortalNode.create! :title => 'previously created association'
-    j1 = ImmortalJoin.create! :immortal_model => m1, :immortal_node => n1
-
-    @n = ImmortalNode.create! :title => 'testing association'
-    @join = ImmortalJoin.create! :immortal_model => @m, :immortal_node => @n
-
-    @join.destroy
-
-    @m.nodes.count.should == 0
-    @n.joins.count.should == 0
-
-    @m.nodes.count_only_deleted.should == 1
-    @n.joins.count_only_deleted.should == 1
-  end
 end
