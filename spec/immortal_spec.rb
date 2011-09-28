@@ -38,12 +38,6 @@ describe Immortal do
     ImmortalModel.all.should be_empty
   end
 
-  it "should find deleted records using scope" do
-    @m.destroy
-    ImmortalModel.with_deleted.first.should == @m
-    ImmortalModel.with_deleted.all.should include(@m)
-  end
-
   it "should find deleted records using the old method" do
     ImmortalModel.find_with_deleted(@m.id).should == @m
     @m.destroy
@@ -53,12 +47,10 @@ describe Immortal do
   it "should count undeleted records by default" do
     @m2 = ImmortalModel.create! :title => 'testing immortal again'
     ImmortalModel.count_only_deleted.should == 0
-    ImmortalModel.only_deleted.count.should == 0
 
     @m.destroy
 
     ImmortalModel.count_only_deleted.should == 1
-    ImmortalModel.only_deleted.count.should == 1
   end
 
   it "should find only deleted records" do
@@ -67,19 +59,12 @@ describe Immortal do
       ImmortalModel.find_only_deleted(@m.id)
     }.to raise_error(ActiveRecord::RecordNotFound)
 
-    expect {
-      ImmortalModel.only_deleted.find(@m.id)
-    }.to raise_error(ActiveRecord::RecordNotFound)
-
     @m.destroy
 
     ImmortalModel.find_only_deleted(@m.id).should == @m
     expect {
       ImmortalModel.find_only_deleted(@m2.id)
     }.to raise_error(ActiveRecord::RecordNotFound)
-
-    ImmortalModel.only_deleted.should include(@m)
-    ImmortalModel.only_deleted.should_not include(@m2)
   end
 
   it "should be able to count undeleted records" do
@@ -95,7 +80,6 @@ describe Immortal do
     @m2 = ImmortalModel.create! :title => 'testing immortal again'
     @m.destroy
     ImmortalModel.count_with_deleted.should == 2
-    ImmortalModel.with_deleted.count.should == 2
   end
 
   it "should not exist if deleted" do
@@ -152,7 +136,7 @@ describe Immortal do
   it "should immortally delete all records with delete_all!" do
     expect {
       ImmortalModel.delete_all!
-    }.to change(ImmortalModel.with_deleted, :count).by(-1)
+    }.to change(ImmortalModel, :count_with_deleted).by(-1)
   end
 
   it "should know if it's deleted" do
@@ -163,7 +147,7 @@ describe Immortal do
 
   it "should be recoverable" do
     @m.destroy
-    @m = ImmortalModel.with_deleted.find(@m.id)
+    @m = ImmortalModel.find_with_deleted(@m.id)
     @m.recover!
     @m.should_not be_frozen
     @m.should_not be_changed
@@ -227,8 +211,8 @@ describe Immortal do
     @m.nodes.count.should == 0
     @n.joins.count.should == 0
 
-    @m.nodes.with_deleted.count.should == 1
-    @n.joins.with_deleted.count.should == 1
+    @m.nodes.count_with_deleted.should == 1
+    @n.joins.count_with_deleted.should == 1
   end
 
   it "should not unscope associations when using only_deleted scope" do
@@ -244,7 +228,7 @@ describe Immortal do
     @m.nodes.count.should == 0
     @n.joins.count.should == 0
 
-    @m.nodes.only_deleted.count.should == 1
-    @n.joins.only_deleted.count.should == 1
+    @m.nodes.count_only_deleted.should == 1
+    @n.joins.count_only_deleted.should == 1
   end
 end

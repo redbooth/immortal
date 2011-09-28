@@ -29,36 +29,38 @@ module Immortal
       self.included_modules.include?(::Immortal::InstanceMethods)
     end
 
-    def with_deleted
-      except(:where).where(filter_undeleted_where_clauses.join(' AND '))
+    def without_default_scope
+      with_exclusive_scope do
+        yield
+      end
     end
 
     def exists?(id = false)
       where(:deleted => false).exists?(id)
     end
 
-    def only_deleted
-      deleted_clause = arel_table[:deleted].eq(true)
-      where_sql_clauses = filter_undeleted_where_clauses
-      where_sql_clauses.concat unscoped.where(deleted_clause).constraints.collect(&:to_sql)
-
-      except(:where).where(where_sql_clauses.join(" AND "))
-    end
-
     def count_with_deleted(*args)
-      with_deleted.count(*args)
+      without_default_scope do
+        count(*args)
+      end
     end
 
     def count_only_deleted(*args)
-      only_deleted.count(*args)
+      without_default_scope do
+        where(:deleted => true).count(*args)
+      end
     end
 
     def find_with_deleted(*args)
-      with_deleted.find(*args)
+      without_default_scope do
+        find(*args)
+      end
     end
 
     def find_only_deleted(*args)
-      only_deleted.find(*args)
+      without_default_scope do
+        where(:deleted => true).find(*args)
+      end
     end
 
     def immortal_delete_all(conditions = nil)
@@ -75,19 +77,6 @@ module Immortal
 
     def deleted_clause_sql
       unscoped.where(arel_table[:deleted].eq(true)).constraints.first.to_sql
-    end
-
-    private
-
-    def filter_undeleted_where_clauses
-      where_clauses = scoped.arel.constraints.collect(&:to_sql)
-
-      #Yes it's an ugly hack but I couldn't find a cleaner way of doing this
-      filtered_clauses = where_clauses.dup.map do |clause| 
-        clause.gsub(/(\s+AND\s+)?\("?`?(\w+)`?"?."?`?deleted`?"?\sIS\sNULL[^\)]+\)/, '')
-      end.map {|cl| cl.gsub("()", '')}.select {|cl| !cl.empty?}
-
-      filtered_clauses
     end
 
   end
