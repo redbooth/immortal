@@ -44,6 +44,8 @@ If you want to improve immortal
 
 ## CHANGELOG
 
+- 1.0.0 Changed the API, made it compatible with Rails 3.1, removed
+  functionality
 - 0.1.6 Fixing immortal issue 2: with_deleted breaks associations
 - 0.1.5 Add "without deleted" scope to join model by overriding HasManyThroughAssociation#construct_conditions
     rather than simply adding to has_many conditions.
