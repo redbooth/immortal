@@ -3,7 +3,7 @@ $:.push File.expand_path("../lib", __FILE__)
 
 Gem::Specification.new do |s|
   s.name        = "immortal"
-  s.version     = '1.0.0'
+  s.version     = '1.0.1'
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Jordi Romero", "Saimon Moore"]
   s.email       = ["jordi@jrom.net", "saimon@saimonmoore.net"]
@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
 
-  s.add_dependency 'activerecord', '3.1.0'
+  s.add_dependency 'activerecord', '~> 3.1.0'
   s.add_development_dependency 'rspec', '~> 2.3.0'
   s.add_development_dependency 'sqlite3'
   s.add_development_dependency 'ruby-debug', '~> 0.10.4'
