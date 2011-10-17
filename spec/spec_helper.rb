@@ -1,6 +1,6 @@
 Bundler.require(:default, :development)
 require 'rspec'
-require 'lib/immortal'
+require File.expand_path("../../lib/immortal", __FILE__)
 require 'active_record'
 require 'sqlite3'
 require 'logger'

@@ -29,9 +29,6 @@ And add a boolean field called `deleted` to that model:
 ## TODO
 
 - Add documentation in the code
-- Spec associations
-- Add support for a :with_deleted option in associations, like acts_as_paranoid
-- Improve compatibility with acts_as_paranoid
 
 ## Contributing
 
@@ -44,6 +41,7 @@ If you want to improve immortal
 
 ## CHANGELOG
 
+- 1.0.1 Made compatible with Rails 3.1.X
 - 1.0.0 Changed the API, made it compatible with Rails 3.1, removed
   functionality
 - 0.1.6 Fixing immortal issue 2: with_deleted breaks associations
