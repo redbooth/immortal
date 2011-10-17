@@ -42,8 +42,24 @@ module Immortal
     end
 
     def without_default_scope
-      with_exclusive_scope do
-        yield
+      new_scope = self.unscoped
+      our_scope = self.current_scope || self.unscoped
+
+      non_immortal_constraints = our_scope.arel.constraints.select do |constraint|
+        !constraint.to_sql.include?('deleted')
+      end
+
+      non_immortal_constraints_sql = non_immortal_constraints.to_a.map do |constraint|
+        constraint.to_sql
+      end.join(' AND ')
+
+      new_scope = new_scope.merge(our_scope.except(:where))
+      new_scope = new_scope.where(non_immortal_constraints_sql)
+
+      unscoped do
+        with_scope(new_scope) do
+          yield
+        end
       end
     end
 
