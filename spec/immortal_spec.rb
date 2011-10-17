@@ -198,4 +198,53 @@ describe Immortal do
     generated_sql.should include(join_sql2)
   end
 
+  it "should reload immortal polymorphic associations using default reader" do
+    node = ImmortalNode.create! :title => 'testing association 1'
+    target_1 = ImmortalSomeTarget.create! :title => 'target 1'
+    target_2 = ImmortalSomeOtherTarget.create! :title => 'target 2'
+
+    node.target.should be_nil
+    node.target = target_1
+    node.target.should == target_1
+
+    node.target_id = target_2.id
+    node.target_type = target_2.class.name
+
+    target_2.destroy
+    node.target.should be_nil
+  end
+
+  it "should reload immortal polymorphic associations using deleted reader" do
+    #setup
+    node = ImmortalNode.create! :title => 'testing association 1'
+    target_1 = ImmortalSomeTarget.create! :title => 'target 1'
+    target_2 = ImmortalSomeOtherTarget.create! :title => 'target 2'
+
+    #confirm initial state
+    node.target.should be_nil
+
+    #load target & confirm
+    node.target = target_1
+    node.target.should == target_1
+
+    #switch target indirectly
+    node.target_id = target_2.id
+    node.target_type = target_2.class.name
+
+    #don't assign directly and destroy new target
+    target_2.destroy
+
+    #Respect what's expected
+    node.target.should be_nil
+
+    #Ask for deleted target (or not deleted). Will NOT cache
+    node.target_with_deleted.should == target_2
+
+    #Ask only for deleted target. Will NOT cache
+    node.target_only_deleted.should == target_2
+
+    #Confirm we haven't invaded the target namespace
+    node.target.should be_nil
+  end
+
 end

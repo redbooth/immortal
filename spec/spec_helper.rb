@@ -36,8 +36,22 @@ begin
       t.timestamps
     end
     create_table :immortal_nodes do |t|
+      t.integer :target_id
+      t.string :target_type
       t.string :title
       t.integer :value
+      t.boolean :deleted, :default => false
+      t.timestamps
+    end
+
+    create_table :immortal_some_targets do |t|
+      t.string :title
+      t.boolean :deleted, :default => false
+      t.timestamps
+    end
+
+    create_table :immortal_some_other_targets do |t|
+      t.string :title
       t.boolean :deleted, :default => false
       t.timestamps
     end
@@ -61,7 +75,22 @@ class ImmortalNode < ActiveRecord::Base
   
   has_many :joins, :class_name => 'ImmortalJoin'
   has_many :models, :through => :joins, :source => :immortal_model
+
+  belongs_to :target, :polymorphic => true
 end
+
+class ImmortalSomeTarget < ActiveRecord::Base
+  include Immortal
+
+  has_many :immortal_nodes, :as => :target
+end
+
+class ImmortalSomeOtherTarget < ActiveRecord::Base
+  include Immortal
+
+  has_many :immortal_nodes, :as => :target
+end
+
 
 class ImmortalModel < ActiveRecord::Base
   include Immortal
