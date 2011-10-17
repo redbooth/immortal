@@ -41,6 +41,7 @@ If you want to improve immortal
 
 ## CHANGELOG
 
+- 1.0.2 Added with/only_deleted singular association readers (see specs)
 - 1.0.1 Made compatible with Rails 3.1.X
 - 1.0.0 Changed the API, made it compatible with Rails 3.1, removed
   functionality
