@@ -12,6 +12,9 @@ module Immortal
     private
 
         def deleted_reader(how, force_reload = false)
+          reset
+          reset_scope
+
           klass.uncached do
             send(:"find_#{how}_deleted_target")
           end
