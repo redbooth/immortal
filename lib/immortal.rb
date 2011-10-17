@@ -1,17 +1,13 @@
-require 'immortal/belongs_to_builder'
+require 'immortal/belongs_to'
 
 module Immortal
 
   def self.included(base)
     base.send :extend, ClassMethods
     base.send :include, InstanceMethods
+    base.send :include, BelongsTo
     base.class_eval do
       class << self
-
-        # Add with/how_deleted singular association readers
-        def belongs_to_mortal(name, options = {})
-          ::Immortal::BelongsToBuilder.build(self, name, options)
-        end
 
         # In has_many :through => join_model we have to explicitly add
         # the 'not deleted' scope, otherwise it will take all the rows
@@ -24,10 +20,6 @@ module Immortal
 
         alias_method :has_many_immortal, :has_many
         alias_method :has_many, :has_many_mortal
-
-        alias_method :belongs_to_immortal, :belongs_to
-        alias_method :belongs_to, :belongs_to_mortal
-
 
         alias :mortal_delete_all :delete_all
         alias :delete_all :immortal_delete_all
