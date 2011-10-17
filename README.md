@@ -41,6 +41,7 @@ If you want to improve immortal
 
 ## CHANGELOG
 
+- 1.0.4 Extract with_deleted singular assoc readers to separate module
 - 1.0.3 Added back feature where using immortal finders doesn't unscope association scopes.
 - 1.0.2 Added with/only_deleted singular association readers (see specs)
 - 1.0.1 Made compatible with Rails 3.1.X
