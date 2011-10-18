@@ -234,11 +234,12 @@ describe Immortal do
     #don't assign directly and destroy new target
     target_2.destroy
 
+    #Ask for deleted target (or not deleted). Will NOT cache
+    # Run this before default accessor to test scope has been reset.
+    node.target_with_deleted.should == target_2
+
     #Respect what's expected
     node.target.should be_nil
-
-    #Ask for deleted target (or not deleted). Will NOT cache
-    node.target_with_deleted.should == target_2
 
     #Ask only for deleted target. Will NOT cache
     node.target_only_deleted.should == target_2
@@ -260,7 +261,7 @@ describe Immortal do
     node.target = target_1
     node.target.should == target_1
 
-    #switch target indirectly
+    #switch target directly
     node.target = target_2
 
     node.target.should == target_2
@@ -277,6 +278,49 @@ describe Immortal do
 
     #Confirm we haven't invaded the target namespace
     node.target.should be_nil
+  end
+
+  it "deleted readers should respect staleness" do
+    #setup
+    node = ImmortalNode.create! :title => 'testing association 1'
+    target_1 = ImmortalSomeTarget.create! :title => 'target 1'
+    target_2 = ImmortalSomeOtherTarget.create! :title => 'target 2'
+
+    #confirm initial state
+    node.target.should be_nil
+    node.target_with_deleted.should be_nil
+    node.target_only_deleted.should be_nil
+
+    #load target & confirm
+    node.target = target_1
+    node.target.should == target_1
+    node.target_with_deleted.should == target_1
+    node.target_only_deleted.should be_nil
+
+    #switch target directly
+    node.target = target_2
+
+    node.target.should == target_2
+    node.target_with_deleted.should == target_2
+
+    #don't assign directly and destroy new target
+    target_2.destroy
+
+    #Respect what's expected
+    node.target(true).should be_nil
+
+    #Ask for deleted target (or not deleted).
+    node.target_with_deleted.should == target_2
+    node.target_only_deleted.should == target_2
+
+    #Confirm we haven't invaded the target namespace
+    node.target.should be_nil
+
+    node.target_id = target_1.id
+    node.target_type = target_1.class.name
+    node.target.should == target_1
+    node.target_with_deleted.should == target_1
+    node.target_only_deleted.should be_nil
   end
 
   it "should not unscope associations when using with_deleted scope" do
