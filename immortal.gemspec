@@ -3,12 +3,12 @@ $:.push File.expand_path("../lib", __FILE__)
 
 Gem::Specification.new do |s|
   s.name        = "immortal"
-  s.version     = '1.0.5'
+  s.version     = '2.0.0'
   s.authors     = ["Jordi Romero", "Saimon Moore"]
   s.email       = ["jordi@jrom.net", "saimon@saimonmoore.net"]
   s.homepage    = "http://github.com/teambox/immortal"
-  s.summary     = %q{Replacement for acts_as_paranoid for Rails 3}
-  s.description = %q{Typical paranoid gem built for Rails 3 and with the minimum code needed to satisfy acts_as_paranoid's API}
+  s.summary     = %q{Non-standard replacement for acts_as_paranoid for Rails 3}
+  s.description = %q{A new more explicity take on the typical aranoid gem built for Rails 3. Built with the minimum code needed to satisfy acts_as_paranoid's API but more explicit. (i.e. no default_scope)}
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {spec}/*`.split("\n")
