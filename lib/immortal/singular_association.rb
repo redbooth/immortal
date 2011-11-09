@@ -1,9 +1,9 @@
 module Immortal
   module SingularAssociation
-    attr_reader :with_deleted_target, :only_deleted_target
+    attr_reader :without_deleted_target, :only_deleted_target
 
-    def with_deleted_reader(force_reload = false)
-      reader_with_deleted(force_reload)
+    def without_deleted_reader(force_reload = false)
+      reader_without_deleted(force_reload)
     end
 
     def only_deleted_reader(force_reload = false)
@@ -12,10 +12,10 @@ module Immortal
 
     private
 
-      def reset_with_deleted
-        @with_deleted_loaded = false
-        ActiveRecord::IdentityMap.remove(with_deleted_target) if ActiveRecord::IdentityMap.enabled? && with_deleted_target
-        @with_deleted_target = nil
+      def reset_without_deleted
+        @without_deleted_loaded = false
+        ActiveRecord::IdentityMap.remove(without_deleted_target) if ActiveRecord::IdentityMap.enabled? && without_deleted_target
+        @without_deleted_target = nil
       end
 
       def reset_only_deleted
@@ -24,9 +24,9 @@ module Immortal
         @only_deleted_target = nil
       end
 
-      def with_deleted_loaded!
-        @with_deleted_loaded      = true
-        @with_deleted_stale_state = stale_state
+      def without_deleted_loaded!
+        @without_deleted_loaded      = true
+        @without_deleted_stale_state = stale_state
       end
 
       def only_deleted_loaded!
@@ -34,16 +34,16 @@ module Immortal
         @only_deleted_stale_state = stale_state
       end
 
-      def with_deleted_loaded?
-        @with_deleted_loaded
+      def without_deleted_loaded?
+        @without_deleted_loaded
       end
 
       def only_deleted_loaded?
         @only_deleted_loaded
       end
 
-      def stale_with_deleted_target?
-        with_deleted_loaded? && @with_deleted_stale_state != stale_state
+      def stale_without_deleted_target?
+        without_deleted_loaded? && @without_deleted_stale_state != stale_state
       end
 
       def stale_only_deleted_target?
@@ -57,37 +57,37 @@ module Immortal
         self unless only_deleted_target.nil?
       end
 
-      def reload_with_deleted
-        reset_with_deleted
+      def reload_without_deleted
+        reset_without_deleted
         reset_scope
-        load_with_deleted_target
-        self unless with_deleted_target.nil?
+        load_without_deleted_target
+        self unless without_deleted_target.nil?
       end
 
-      def find_with_deleted_target?
-        !with_deleted_loaded? && (!owner.new_record? || foreign_key_present?) && klass
+      def find_without_deleted_target?
+        !without_deleted_loaded? && (!owner.new_record? || foreign_key_present?) && klass
       end
 
       def find_only_deleted_target?
         !only_deleted_loaded? && (!owner.new_record? || foreign_key_present?) && klass
       end
 
-      def load_with_deleted_target
-        if find_with_deleted_target?
+      def load_without_deleted_target
+        if find_without_deleted_target?
           begin
             if ActiveRecord::IdentityMap.enabled? && association_class && association_class.respond_to?(:base_class)
-              @with_deleted_target = ActiveRecord::IdentityMap.get(association_class, owner[reflection.foreign_key])
+              @without_deleted_target = ActiveRecord::IdentityMap.get(association_class, owner[reflection.foreign_key])
             end
           rescue NameError
             nil
           ensure
-            @with_deleted_target ||= find_with_deleted_target
+            @without_deleted_target ||= find_without_deleted_target
           end
         end
-        with_deleted_loaded! unless with_deleted_loaded?
-        with_deleted_target
+        without_deleted_loaded! unless without_deleted_loaded?
+        without_deleted_target
       rescue ActiveRecord::RecordNotFound
-        with_deleted_reset
+        without_deleted_reset
       end
 
       def load_only_deleted_target
@@ -108,14 +108,14 @@ module Immortal
         only_deleted_reset
       end
 
-      def reader_with_deleted(force_reload = false)
+      def reader_without_deleted(force_reload = false)
         if force_reload
-          klass.uncached { reload_with_deleted } if klass
-        elsif !with_deleted_loaded? || stale_with_deleted_target?
-          reload_with_deleted
+          klass.uncached { reload_without_deleted } if klass
+        elsif !without_deleted_loaded? || stale_without_deleted_target?
+          reload_without_deleted
         end
 
-        with_deleted_target
+        without_deleted_target
       end
 
       def reader_only_deleted(force_reload = false)
@@ -129,18 +129,14 @@ module Immortal
         only_deleted_target
       end
 
-      def find_with_deleted_target
+      def find_without_deleted_target
         return nil unless klass
-        klass.unscoped do
-          scoped.first.tap { |record| set_inverse_instance(record) }
-        end
+        scoped.where(klass.arel_table[:deleted].eq(nil).or(klass.arel_table[:deleted].eq(false))).first.tap { |record| set_inverse_instance(record) }
       end
 
       def find_only_deleted_target
         return nil unless klass
-        klass.unscoped do
-          scoped.where(:deleted => true).first.tap { |record| set_inverse_instance(record) }
-        end
+        scoped.where(:deleted => true).first.tap { |record| set_inverse_instance(record) }
       end
 
   end

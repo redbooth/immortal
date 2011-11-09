@@ -8,7 +8,7 @@ describe Immortal do
   it "should not be deleted from the database using #destroy" do
     expect {
       @m.destroy
-    }.to_not change(ImmortalModel, :count_with_deleted)
+    }.to_not change(ImmortalModel, :count)
   end
 
   it "should be frozen using #destroy" do
@@ -24,33 +24,39 @@ describe Immortal do
   it "should be deleted from the database using #destroy!" do
     expect {
       @m.destroy!
-    }.to change(ImmortalModel, :count_with_deleted)
+    }.to change(ImmortalModel, :count)
   end
 
   it "should find non deleted records" do
-    ImmortalModel.first.should == @m
-    ImmortalModel.all.should include(@m)
+    ImmortalModel.without_deleted.first.should == @m
+    ImmortalModel.without_deleted.all.should include(@m)
   end
 
   it "should not find deleted records" do
     @m.destroy
-    ImmortalModel.first.should be_nil
-    ImmortalModel.all.should be_empty
+    ImmortalModel.without_deleted.first.should be_nil
+    ImmortalModel.without_deleted.all.should be_empty
   end
 
   it "should find deleted records using the old method" do
-    ImmortalModel.find_with_deleted(@m.id).should == @m
+    ImmortalModel.find(@m.id).should == @m
+    ImmortalModel.without_deleted.find(@m.id).should == @m
     @m.destroy
-    ImmortalModel.find_with_deleted(@m.id).should == @m
+    ImmortalModel.find(@m.id).should == @m
+    expect {
+      ImmortalModel.without_deleted.find(@m.id)
+    }.to raise_error(ActiveRecord::RecordNotFound)
   end
 
   it "should count undeleted records by default" do
     @m2 = ImmortalModel.create! :title => 'testing immortal again'
     ImmortalModel.count_only_deleted.should == 0
+    ImmortalModel.only_deleted.count.should == 0
 
     @m.destroy
 
     ImmortalModel.count_only_deleted.should == 1
+    ImmortalModel.only_deleted.count.should == 1
   end
 
   it "should find only deleted records" do
@@ -61,7 +67,9 @@ describe Immortal do
 
     @m.destroy
 
+    ImmortalModel.only_deleted.find(@m.id).should == @m
     ImmortalModel.find_only_deleted(@m.id).should == @m
+
     expect {
       ImmortalModel.find_only_deleted(@m2.id)
     }.to raise_error(ActiveRecord::RecordNotFound)
@@ -69,17 +77,17 @@ describe Immortal do
 
   it "should be able to count undeleted records" do
     @m2 = ImmortalModel.create! :title => 'testing immortal again'
-    ImmortalModel.count.should == 2
+    ImmortalModel.without_deleted.count.should == 2
 
     @m.destroy
 
-    ImmortalModel.count.should == 1
+    ImmortalModel.without_deleted.count.should == 1
   end
 
   it "should be able to count all the records including deleted" do
     @m2 = ImmortalModel.create! :title => 'testing immortal again'
     @m.destroy
-    ImmortalModel.count_with_deleted.should == 2
+    ImmortalModel.count.should == 2
   end
 
   it "should not exist if deleted" do
@@ -93,7 +101,7 @@ describe Immortal do
     @m3 = ImmortalModel.create! :value => 20
     ImmortalModel.calculate(:sum, :value).should == 30
     @m2.destroy
-    ImmortalModel.calculate(:sum, :value).should == 20
+    ImmortalModel.without_deleted.calculate(:sum, :value).should == 20
   end
 
   it "should execute the before_destroy callback when immortally destroyed" do
@@ -129,14 +137,14 @@ describe Immortal do
   it "should immortally delete all records with delete_all" do
     expect {
       ImmortalModel.delete_all
-    }.to change(ImmortalModel, :count).by(-1)
-    ImmortalModel.count_with_deleted.should == 1
+    }.to change(ImmortalModel.without_deleted, :count).by(-1)
+    ImmortalModel.count.should == 1
   end
 
   it "should immortally delete all records with delete_all!" do
     expect {
       ImmortalModel.delete_all!
-    }.to change(ImmortalModel, :count_with_deleted).by(-1)
+    }.to change(ImmortalModel, :count).by(-1)
   end
 
   it "should know if it's deleted" do
@@ -147,18 +155,18 @@ describe Immortal do
 
   it "should be recoverable" do
     @m.destroy
-    @m = ImmortalModel.find_with_deleted(@m.id)
+    @m = ImmortalModel.find(@m.id)
     @m.recover!
     @m.should_not be_frozen
     @m.should_not be_changed
-    ImmortalModel.first.should == @m
+    ImmortalModel.without_deleted.first.should == @m
   end
 
   it "should consider an object with deleted = nil as not deleted" do
     @m2 = ImmortalModel.create! :deleted => nil
     @m2.deleted.should be_nil
     @m2.should_not be_deleted
-    ImmortalModel.count.should == 2
+    ImmortalModel.without_deleted.count.should == 2
   end
 
   it "should consider an Many-to-many association with through as deleted when the join is deleted." do
@@ -170,8 +178,9 @@ describe Immortal do
 
     @join.destroy
 
-    @m.nodes.count.should == 0
-    @n.models.count.should == 0
+    #dependent => destroy
+    @m.nodes.without_deleted.count.should == 0
+    @n.models.without_deleted.count.should == 1
   end
 
   it "should only immortally delete scoped associations, NOT ALL RECORDS" do
@@ -211,7 +220,7 @@ describe Immortal do
     node.target_type = target_2.class.name
 
     target_2.destroy
-    node.target.should be_nil
+    node.target_without_deleted.should be_nil
   end
 
   it "should reload immortal polymorphic associations using deleted reader" do
@@ -236,48 +245,48 @@ describe Immortal do
 
     #Ask for deleted target (or not deleted). Will NOT cache
     # Run this before default accessor to test scope has been reset.
-    node.target_with_deleted.should == target_2
+    node.target.should == target_2
 
     #Respect what's expected
-    node.target.should be_nil
+    node.target_without_deleted.should be_nil
 
     #Ask only for deleted target. Will NOT cache
     node.target_only_deleted.should == target_2
 
     #Confirm we haven't invaded the target namespace
-    node.target.should be_nil
+    node.target_without_deleted.should be_nil
   end
 
-  it "should reload immortal polymorphic associations using deleted reader (direct assignment)" do
+  it "should reload immortal polymorphic associations using without_deleted reader (direct assignment)" do
     #setup
     node = ImmortalNode.create! :title => 'testing association 1'
     target_1 = ImmortalSomeTarget.create! :title => 'target 1'
     target_2 = ImmortalSomeOtherTarget.create! :title => 'target 2'
 
     #confirm initial state
-    node.target.should be_nil
+    node.target_without_deleted.should be_nil
 
     #load target & confirm
     node.target = target_1
-    node.target.should == target_1
+    node.target_without_deleted.should == target_1
 
     #switch target directly
     node.target = target_2
 
+    node.target_without_deleted.should == target_2
     node.target.should == target_2
-    node.target_with_deleted.should == target_2
 
     #don't assign directly and destroy new target
     target_2.destroy
 
     #Respect what's expected
-    node.target(true).should be_nil
+    node.target_without_deleted(true).should be_nil
 
     #Ask for deleted target (or not deleted). Will NOT cache
-    node.target_with_deleted.should == target_2
+    node.target.should == target_2
 
     #Confirm we haven't invaded the target namespace
-    node.target.should be_nil
+    node.target_without_deleted.should be_nil
   end
 
   it "deleted readers should respect staleness" do
@@ -287,75 +296,54 @@ describe Immortal do
     target_2 = ImmortalSomeOtherTarget.create! :title => 'target 2'
 
     #confirm initial state
+    node.target_without_deleted.should be_nil
     node.target.should be_nil
-    node.target_with_deleted.should be_nil
     node.target_only_deleted.should be_nil
 
     #load target & confirm
     node.target = target_1
+    node.target_without_deleted.should == target_1
     node.target.should == target_1
-    node.target_with_deleted.should == target_1
     node.target_only_deleted.should be_nil
 
     #switch target directly
     node.target = target_2
 
+    node.target_without_deleted.should == target_2
     node.target.should == target_2
-    node.target_with_deleted.should == target_2
 
     #don't assign directly and destroy new target
     target_2.destroy
 
     #Respect what's expected
-    node.target(true).should be_nil
+    node.target_without_deleted(true).should be_nil
 
     #Ask for deleted target (or not deleted).
-    node.target_with_deleted.should == target_2
+    node.target.should == target_2
     node.target_only_deleted.should == target_2
 
     #Confirm we haven't invaded the target namespace
-    node.target.should be_nil
+    node.target_without_deleted.should be_nil
 
     node.target_id = target_1.id
     node.target_type = target_1.class.name
+    node.target_without_deleted.should == target_1
     node.target.should == target_1
-    node.target_with_deleted.should == target_1
     node.target_only_deleted.should be_nil
   end
 
-  it "should not unscope associations when using with_deleted scope" do
-    m1 = ImmortalModel.create! :title => 'previously created model'
-    n1 = ImmortalNode.create! :title => 'previously created association'
-    j1 = ImmortalJoin.create! :immortal_model => m1, :immortal_node => n1
+  #This is a consequence of Immortal::Relation
+  # See comments there for more details.
+  it "should not be able to delete records marked as deleted via AR::Base::destroy" do
+    @m.destroy
 
-    @n = ImmortalNode.create! :title => 'testing association'
-    @join = ImmortalJoin.create! :immortal_model => @m, :immortal_node => @n
+    ImmortalModel.without_deleted.count.should == 0
+    ImmortalModel.count.should == 1
 
-    @join.destroy
+    ImmortalModel.destroy(@m.id)
 
-    @m.nodes.count.should == 0
-    @n.joins.count.should == 0
-
-    @m.nodes.count_with_deleted.should == 1
-    @n.joins.count_with_deleted.should == 1
-  end
-
-  it "should not unscope associations when using only_deleted scope" do
-    m1 = ImmortalModel.create! :title => 'previously created model'
-    n1 = ImmortalNode.create! :title => 'previously created association'
-    j1 = ImmortalJoin.create! :immortal_model => m1, :immortal_node => n1
-
-    @n = ImmortalNode.create! :title => 'testing association'
-    @join = ImmortalJoin.create! :immortal_model => @m, :immortal_node => @n
-
-    @join.destroy
-
-    @m.nodes.count.should == 0
-    @n.joins.count.should == 0
-
-    @m.nodes.count_only_deleted
-    @m.nodes.count_only_deleted.should == 1
-    @n.joins.count_only_deleted.should == 1
+    ImmortalModel.without_deleted.count.should == 0
+    ImmortalModel.count.should == 1
   end
 
 end
