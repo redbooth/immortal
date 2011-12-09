@@ -84,7 +84,7 @@ module Immortal
     end
 
     def immortal_delete_all(conditions = nil)
-      unscoped.update_all({:deleted => 1}, conditions)
+      unscoped.update_all({:deleted => true}, conditions)
     end
 
     def delete_all!(*args)
