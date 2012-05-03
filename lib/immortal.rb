@@ -1,4 +1,7 @@
 require 'immortal/belongs_to'
+require 'immortal/relation'
+
+ActiveRecord::Relation.send(:include, Immortal::Relation)
 
 module Immortal
 
@@ -33,70 +36,32 @@ module Immortal
       self.included_modules.include?(::Immortal::InstanceMethods)
     end
 
-    def without_default_scope
-      new_scope = self.unscoped
-      our_scope = self.current_scope || self.unscoped
-
-      non_immortal_constraints = our_scope.arel.constraints.select do |constraint|
-        !constraint.to_sql.include?('deleted')
-      end
-
-      non_immortal_constraints_sql = non_immortal_constraints.to_a.map do |constraint|
-        constraint.to_sql
-      end.join(' AND ')
-
-      new_scope = new_scope.merge(our_scope.except(:where))
-      new_scope = new_scope.where(non_immortal_constraints_sql)
-
-      unscoped do
-        with_scope(new_scope) do
-          yield
-        end
-      end
-    end
-
     def exists?(id = false)
       where(:deleted => false).exists?(id)
     end
 
-    def count_with_deleted(*args)
-      without_default_scope do
-        count(*args)
-      end
-    end
-
     def count_only_deleted(*args)
-      without_default_scope do
-        where(:deleted => true).count(*args)
-      end
-    end
-
-    def find_with_deleted(*args)
-      without_default_scope do
-        find(*args)
-      end
+      where(:deleted => true).count(*args)
     end
 
     def find_only_deleted(*args)
-      without_default_scope do
-        where(:deleted => true).find(*args)
-      end
+      where(:deleted => true).find(*args)
     end
 
     def immortal_delete_all(conditions = nil)
-      unscoped.update_all({:deleted => 1}, conditions)
+      update_all({:deleted => 1}, conditions)
     end
 
     def delete_all!(*args)
-      unscoped.mortal_delete_all(*args)
+      mortal_delete_all(*args)
     end
 
     def undeleted_clause_sql
-      unscoped.where(arel_table[:deleted].eq(nil).or(arel_table[:deleted].eq(false))).constraints.first.to_sql
+      where(arel_table[:deleted].eq(nil).or(arel_table[:deleted].eq(false))).constraints.first.to_sql
     end
 
     def deleted_clause_sql
-      unscoped.where(arel_table[:deleted].eq(true)).constraints.first.to_sql
+      where(arel_table[:deleted].eq(true)).constraints.first.to_sql
     end
 
   end
@@ -104,9 +69,15 @@ module Immortal
   module InstanceMethods
     def self.included(base)
       base.class_eval do
-        default_scope where(arel_table[:deleted].eq(nil).or(arel_table[:deleted].eq(false))) if arel_table[:deleted]
+        # create a scope out of this and use that explicitly
+        scope :without_deleted, where(arel_table[:deleted].eq(nil).or(arel_table[:deleted].eq(false))) if arel_table[:deleted]
+        scope :only_deleted, where(:deleted => true) if arel_table[:deleted]
+
         alias :mortal_destroy :destroy
         alias :destroy :immortal_destroy
+
+        # on association and class object.
+        # :delete :delete_all, :destroy, :destroy_all
       end
     end
 
@@ -121,13 +92,13 @@ module Immortal
     end
 
     def destroy_without_callbacks
-      self.class.unscoped.update_all({ :deleted => true }, "id = #{self.id}")
+      self.class.update_all({ :deleted => true }, "id = #{self.id}")
       reload
       freeze
     end
 
     def recover!
-      self.class.unscoped.update_all({ :deleted => false }, "id = #{self.id}")
+      self.class.update_all({ :deleted => false }, "id = #{self.id}")
       reload
     end
 

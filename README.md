@@ -41,6 +41,27 @@ If you want to improve immortal
 
 ## CHANGELOG
 
+- 2.0.0 [WARNING NON-BACKWARDS COMPATIBLE RELEASE]
+
+  The major new feature here is we've removed the default_scope.
+
+  To get find to NOT return records marked as deleted by immortal, 
+  you now need to be explicit and use the supplied 'without_deleted' scope.
+
+    Task.without_deleted.first
+
+  If you want all records then don't bother with the scope:
+
+    Task.first
+
+  If you only want deleted records use the 'only_deleted' scope.
+
+    Task.only_deleted.first
+
+  The 'with_deleted' scope is no longer.
+
+  See the updated specs for a feel of what using immortal is like now.
+
 - 1.0.5 Use separate internal accessors for with/only_deleted singular association readers
 - 1.0.4 Extract with_deleted singular assoc readers to separate module
 - 1.0.3 Added back feature where using immortal finders doesn't unscope association scopes.

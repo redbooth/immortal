@@ -12,17 +12,17 @@ module Immortal
     private
 
       def define_deletables
-        define_with_deleted_reader
+        define_without_deleted_reader
         define_only_deleted_reader
       end
 
-      def define_with_deleted_reader
+      def define_without_deleted_reader
         name = self.name
 
-        model.redefine_method("#{name}_with_deleted") do |*params|
+        model.redefine_method("#{name}_without_deleted") do |*params|
           assoc = association(name)
           assoc.send(:extend, SingularAssociation)
-          assoc.with_deleted_reader(*params)
+          assoc.without_deleted_reader(*params)
         end
       end
 
