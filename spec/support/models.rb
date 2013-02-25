@@ -2,42 +2,42 @@ class ImmortalJoin < ActiveRecord::Base
   include Immortal
 
   belongs_to :immortal_model
-  belongs_to :immortal_node, :dependent => :destroy
+  belongs_to :immortal_node, dependent: :destroy
 end
 
 class ImmortalNode < ActiveRecord::Base
   include Immortal
 
   has_many :immortal_joins
-  has_many :immortal_models, :through => :immortal_joins
+  has_many :immortal_models, through: :immortal_joins
 
-  has_many :joins, :class_name => 'ImmortalJoin'
-  has_many :models, :through => :joins, :source => :immortal_model
+  has_many :joins, class_name: 'ImmortalJoin'
+  has_many :models, through: :joins, source: :immortal_model
 
-  belongs_to :target, :polymorphic => true
+  belongs_to :target, polymorphic: true
 end
 
 class ImmortalSomeTarget < ActiveRecord::Base
   include Immortal
 
-  has_many :immortal_nodes, :as => :target
+  has_many :immortal_nodes, as: :target
 end
 
 class ImmortalSomeOtherTarget < ActiveRecord::Base
   include Immortal
 
-  has_many :immortal_nodes, :as => :target
+  has_many :immortal_nodes, as: :target
 end
 
 
 class ImmortalModel < ActiveRecord::Base
   include Immortal
 
-  has_many :immortal_nodes, :through => :immortal_joins, :dependent => :destroy
-  has_many :immortal_joins, :dependent => :delete_all
+  has_many :immortal_nodes, through: :immortal_joins, dependent: :destroy
+  has_many :immortal_joins, dependent: :delete_all
 
-  has_many :joins, :class_name => 'ImmortalJoin', :dependent => :delete_all
-  has_many :nodes, :through => :joins, :source => :immortal_node, :dependent => :destroy
+  has_many :joins, class_name: 'ImmortalJoin', dependent: :delete_all
+  has_many :nodes, through: :joins, source: :immortal_node, dependent: :destroy
 
   attr_accessor :before_d, :after_d, :before_u, :after_u
 
