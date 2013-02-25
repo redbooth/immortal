@@ -1,8 +1,8 @@
-require File.dirname(__FILE__) + '/spec_helper'
+require 'spec_helper'
 
 describe Immortal do
   before do
-    @m = ImmortalModel.create! :title => 'testing immortal'
+    @m = ImmortalModel.create! title: 'testing immortal'
   end
 
   it "should not be deleted from the database using #destroy" do
@@ -45,7 +45,7 @@ describe Immortal do
   end
 
   it "should count undeleted records by default" do
-    @m2 = ImmortalModel.create! :title => 'testing immortal again'
+    @m2 = ImmortalModel.create! title: 'testing immortal again'
     ImmortalModel.count_only_deleted.should == 0
 
     @m.destroy
@@ -54,7 +54,7 @@ describe Immortal do
   end
 
   it "should find only deleted records" do
-    @m2 = ImmortalModel.create! :title => 'testing immortal again'
+    @m2 = ImmortalModel.create! title: 'testing immortal again'
     expect {
       ImmortalModel.find_only_deleted(@m.id)
     }.to raise_error(ActiveRecord::RecordNotFound)
@@ -68,7 +68,7 @@ describe Immortal do
   end
 
   it "should be able to count undeleted records" do
-    @m2 = ImmortalModel.create! :title => 'testing immortal again'
+    @m2 = ImmortalModel.create! title: 'testing immortal again'
     ImmortalModel.count.should == 2
 
     @m.destroy
@@ -77,7 +77,7 @@ describe Immortal do
   end
 
   it "should be able to count all the records including deleted" do
-    @m2 = ImmortalModel.create! :title => 'testing immortal again'
+    @m2 = ImmortalModel.create! title: 'testing immortal again'
     @m.destroy
     ImmortalModel.count_with_deleted.should == 2
   end
@@ -89,8 +89,8 @@ describe Immortal do
   end
 
   it "should calculate without deleted" do
-    @m2 = ImmortalModel.create! :value => 10
-    @m3 = ImmortalModel.create! :value => 20
+    @m2 = ImmortalModel.create! value: 10
+    @m3 = ImmortalModel.create! value: 20
     ImmortalModel.calculate(:sum, :value).should == 30
     @m2.destroy
     ImmortalModel.calculate(:sum, :value).should == 20
@@ -155,15 +155,15 @@ describe Immortal do
   end
 
   it "should consider an object with deleted = nil as not deleted" do
-    @m2 = ImmortalModel.create! :deleted => nil
+    @m2 = ImmortalModel.create! deleted: nil
     @m2.deleted.should be_nil
     @m2.should_not be_deleted
     ImmortalModel.count.should == 2
   end
 
   it "should consider an Many-to-many association with through as deleted when the join is deleted." do
-    @n = ImmortalNode.create! :title => 'testing association'
-    @join = ImmortalJoin.create! :immortal_model => @m, :immortal_node => @n
+    @n = ImmortalNode.create! title: 'testing association'
+    @join = ImmortalJoin.create! immortal_model: @m, immortal_node: @n
 
     @m.nodes.count.should == 1
     @n.models.count.should == 1
@@ -175,14 +175,14 @@ describe Immortal do
   end
 
   it "should only immortally delete scoped associations, NOT ALL RECORDS" do
-    n1 = ImmortalNode.create! :title => 'testing association 1'
-    j1 = ImmortalJoin.create! :immortal_model => @m, :immortal_node => n1
+    n1 = ImmortalNode.create! title: 'testing association 1'
+    j1 = ImmortalJoin.create! immortal_model: @m, immortal_node: n1
 
-    n2 = ImmortalNode.create! :title => 'testing association 2'
-    j2 = ImmortalJoin.create! :immortal_model => @m, :immortal_node => n2
+    n2 = ImmortalNode.create! title: 'testing association 2'
+    j2 = ImmortalJoin.create! immortal_model: @m, immortal_node: n2
 
-    n3 = ImmortalNode.create! :title => 'testing association 3'
-    j3 = ImmortalJoin.create! :immortal_node => n3
+    n3 = ImmortalNode.create! title: 'testing association 3'
+    j3 = ImmortalJoin.create! immortal_node: n3
 
     @m.destroy
 
@@ -191,17 +191,23 @@ describe Immortal do
   end
 
   it "should properly generate joins" do
-    join_sql1 = 'INNER JOIN "immortal_joins" ON "immortal_joins"."immortal_node_id" = "immortal_nodes"."id"'
-    join_sql2 = 'INNER JOIN "immortal_models" ON "immortal_models"."id" = "immortal_joins"."immortal_model_id"'
+    case ENV.fetch("DB", "sqlite")
+      when "mysql"
+        join_sql1 = 'INNER JOIN `immortal_joins` ON `immortal_joins`.`immortal_node_id` = `immortal_nodes`.`id`'
+        join_sql2 = 'INNER JOIN `immortal_models` ON `immortal_models`.`id` = `immortal_joins`.`immortal_model_id`'
+      else
+        join_sql1 = 'INNER JOIN "immortal_joins" ON "immortal_joins"."immortal_node_id" = "immortal_nodes"."id"'
+        join_sql2 = 'INNER JOIN "immortal_models" ON "immortal_models"."id" = "immortal_joins"."immortal_model_id"'
+    end
     generated_sql = ImmortalNode.joins(:immortal_models).to_sql
     generated_sql.should include(join_sql1)
     generated_sql.should include(join_sql2)
   end
 
   it "should reload immortal polymorphic associations using default reader" do
-    node = ImmortalNode.create! :title => 'testing association 1'
-    target_1 = ImmortalSomeTarget.create! :title => 'target 1'
-    target_2 = ImmortalSomeOtherTarget.create! :title => 'target 2'
+    node = ImmortalNode.create! title: 'testing association 1'
+    target_1 = ImmortalSomeTarget.create! title: 'target 1'
+    target_2 = ImmortalSomeOtherTarget.create! title: 'target 2'
 
     node.target.should be_nil
     node.target = target_1
@@ -216,9 +222,9 @@ describe Immortal do
 
   it "should reload immortal polymorphic associations using deleted reader" do
     #setup
-    node = ImmortalNode.create! :title => 'testing association 1'
-    target_1 = ImmortalSomeTarget.create! :title => 'target 1'
-    target_2 = ImmortalSomeOtherTarget.create! :title => 'target 2'
+    node = ImmortalNode.create! title: 'testing association 1'
+    target_1 = ImmortalSomeTarget.create! title: 'target 1'
+    target_2 = ImmortalSomeOtherTarget.create! title: 'target 2'
 
     #confirm initial state
     node.target.should be_nil
@@ -250,9 +256,9 @@ describe Immortal do
 
   it "should reload immortal polymorphic associations using deleted reader (direct assignment)" do
     #setup
-    node = ImmortalNode.create! :title => 'testing association 1'
-    target_1 = ImmortalSomeTarget.create! :title => 'target 1'
-    target_2 = ImmortalSomeOtherTarget.create! :title => 'target 2'
+    node = ImmortalNode.create! title: 'testing association 1'
+    target_1 = ImmortalSomeTarget.create! title: 'target 1'
+    target_2 = ImmortalSomeOtherTarget.create! title: 'target 2'
 
     #confirm initial state
     node.target.should be_nil
@@ -282,9 +288,9 @@ describe Immortal do
 
   it "deleted readers should respect staleness" do
     #setup
-    node = ImmortalNode.create! :title => 'testing association 1'
-    target_1 = ImmortalSomeTarget.create! :title => 'target 1'
-    target_2 = ImmortalSomeOtherTarget.create! :title => 'target 2'
+    node = ImmortalNode.create! title: 'testing association 1'
+    target_1 = ImmortalSomeTarget.create! title: 'target 1'
+    target_2 = ImmortalSomeOtherTarget.create! title: 'target 2'
 
     #confirm initial state
     node.target.should be_nil
@@ -324,12 +330,12 @@ describe Immortal do
   end
 
   it "should not unscope associations when using with_deleted scope" do
-    m1 = ImmortalModel.create! :title => 'previously created model'
-    n1 = ImmortalNode.create! :title => 'previously created association'
-    j1 = ImmortalJoin.create! :immortal_model => m1, :immortal_node => n1
+    m1 = ImmortalModel.create! title: 'previously created model'
+    n1 = ImmortalNode.create! title: 'previously created association'
+    j1 = ImmortalJoin.create! immortal_model: m1, immortal_node: n1
 
-    @n = ImmortalNode.create! :title => 'testing association'
-    @join = ImmortalJoin.create! :immortal_model => @m, :immortal_node => @n
+    @n = ImmortalNode.create! title: 'testing association'
+    @join = ImmortalJoin.create! immortal_model: @m, immortal_node: @n
 
     @join.destroy
 
@@ -341,12 +347,12 @@ describe Immortal do
   end
 
   it "should not unscope associations when using only_deleted scope" do
-    m1 = ImmortalModel.create! :title => 'previously created model'
-    n1 = ImmortalNode.create! :title => 'previously created association'
-    j1 = ImmortalJoin.create! :immortal_model => m1, :immortal_node => n1
+    m1 = ImmortalModel.create! title: 'previously created model'
+    n1 = ImmortalNode.create! title: 'previously created association'
+    j1 = ImmortalJoin.create! immortal_model: m1, immortal_node: n1
 
-    @n = ImmortalNode.create! :title => 'testing association'
-    @join = ImmortalJoin.create! :immortal_model => @m, :immortal_node => @n
+    @n = ImmortalNode.create! title: 'testing association'
+    @join = ImmortalJoin.create! immortal_model: @m, immortal_node: @n
 
     @join.destroy
 
@@ -358,4 +364,10 @@ describe Immortal do
     @n.joins.count_only_deleted.should == 1
   end
 
+  context "has_one :association, dependent: :destroy" do
+    subject { ImmortalModel.new(title: "Whatever", immortal_node: ImmortalNode.new(title: "A node")) }
+    it "does not try to destroy unpersisted associations" do
+      subject.immortal_node = ImmortalNode.new(title: "Another node")
+    end
+  end
 end

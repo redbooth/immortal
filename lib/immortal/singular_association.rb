@@ -139,7 +139,7 @@ module Immortal
       def find_only_deleted_target
         return nil unless klass
         klass.unscoped do
-          scoped.where(:deleted => true).first.tap { |record| set_inverse_instance(record) }
+          scoped.where(deleted: true).first.tap { |record| set_inverse_instance(record) }
         end
       end
 
