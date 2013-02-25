@@ -1,0 +1,13 @@
+rvm:
+  - 1.9.3
+
+env:
+  - DB=mysql
+  - DB=postgres
+  - DB=sqlite
+
+before_script:
+  - mysql -e 'create database immortal;'
+  - psql -c 'create database immortal;' -U postgres
+
+script: bundle exec rspec spec
