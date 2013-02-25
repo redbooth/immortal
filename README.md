@@ -1,4 +1,4 @@
-# Immortal
+# Immortal [![Build Status](https://travis-ci.org/knoopx/immortal.png?branch=master)](https://travis-ci.org/knoopx/immortal)
 
 Make any ActiveRecord model paranoid by just including `Immortal`, and instead of being deleted from the database, the object will just marked as 'deleted' with a boolean field in the database.
 
