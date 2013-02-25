@@ -358,4 +358,10 @@ describe Immortal do
     @n.joins.count_only_deleted.should == 1
   end
 
+  context "has_one :association, dependent: :destroy" do
+    subject { ImmortalModel.new(title: "Whatever", immortal_node: ImmortalNode.new(title: "A node")) }
+    it "does not try to destroy unpersisted associations" do
+      subject.immortal_node = ImmortalNode.new(title: "Another node")
+    end
+  end
 end

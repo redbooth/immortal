@@ -8,6 +8,8 @@ end
 class ImmortalNode < ActiveRecord::Base
   include Immortal
 
+  belongs_to :immortal_model, inverse_of: :immortal_node
+
   has_many :immortal_joins
   has_many :immortal_models, through: :immortal_joins
 
@@ -33,6 +35,7 @@ end
 class ImmortalModel < ActiveRecord::Base
   include Immortal
 
+  has_one :immortal_node, inverse_of: :immortal_model, dependent: :destroy
   has_many :immortal_nodes, through: :immortal_joins, dependent: :destroy
   has_many :immortal_joins, dependent: :delete_all
 

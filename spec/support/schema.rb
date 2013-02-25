@@ -15,6 +15,7 @@ ActiveRecord::Schema.define do
 
   create_table :immortal_nodes do |t|
     t.belongs_to :target, polymorphic: true
+    t.belongs_to :immortal_model
     t.string :title
     t.integer :value
     t.boolean :deleted, default: false

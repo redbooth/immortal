@@ -121,8 +121,10 @@ module Immortal
     end
 
     def destroy_without_callbacks
-      self.class.unscoped.update_all({deleted: true}, {id: self.id})
-      reload
+      if persisted?
+        self.class.unscoped.update_all({deleted: true}, {id: self.id})
+        reload
+      end
       freeze
     end
 
