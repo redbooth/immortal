@@ -351,4 +351,12 @@ describe Immortal do
     @n.joins.count_only_deleted.should == 1
   end
 
+  it 'warn when deleted column is nullable' do
+    Kernel.should_receive(:warn)
+
+    class ImmortalNullableDeleted
+      include Immortal
+    end
+  end
+
 end

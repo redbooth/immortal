@@ -55,6 +55,9 @@ begin
       t.boolean :deleted, :default => false, :null => false
       t.timestamps
     end
+
+    create_table :immortal_nullable_deleteds do |t|
+      t.string :title
       t.boolean :deleted, :default => false
       t.timestamps
     end
@@ -128,5 +131,8 @@ class ImmortalModel < ActiveRecord::Base
     @before_u = true
   end
 
+end
+
+class ImmortalNullableDeleted < ActiveRecord::Base
 end
 
