@@ -154,13 +154,6 @@ describe Immortal do
     ImmortalModel.first.should == @m
   end
 
-  it "should consider an object with deleted = nil as not deleted" do
-    @m2 = ImmortalModel.create! :deleted => nil
-    @m2.deleted.should be_nil
-    @m2.should_not be_deleted
-    ImmortalModel.count.should == 2
-  end
-
   it "should consider an Many-to-many association with through as deleted when the join is deleted." do
     @n = ImmortalNode.create! :title => 'testing association'
     @join = ImmortalJoin.create! :immortal_model => @m, :immortal_node => @n
