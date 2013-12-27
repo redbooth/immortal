@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.homepage    = "http://github.com/teambox/immortal"
   s.summary     = %q{Replacement for acts_as_paranoid for Rails 3}
   s.description = %q{Typical paranoid gem built for Rails 3 and with the minimum code needed to satisfy acts_as_paranoid's API}
-  s.license = "MIT"
+  s.license     = "MIT"
   
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {spec}/*`.split("\n")
