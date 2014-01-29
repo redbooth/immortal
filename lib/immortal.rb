@@ -37,13 +37,9 @@ module Immortal
       new_scope = self.unscoped
       our_scope = self.current_scope || self.unscoped
 
-      non_immortal_constraints = our_scope.arel.constraints.select do |constraint|
-        !constraint.to_sql.include?('deleted')
-      end
-
-      non_immortal_constraints_sql = non_immortal_constraints.to_a.map do |constraint|
-        constraint.to_sql
-      end.join(' AND ')
+      non_immortal_constraints_sql = our_scope.arel.constraints.to_a.map do |constraint|
+        constraint.to_sql.split('AND').reject{|clause| clause.include?('deleted')}
+      end.flatten.join(' AND ')
 
       new_scope = new_scope.merge(our_scope.except(:where))
       new_scope = new_scope.where(non_immortal_constraints_sql)
@@ -92,7 +88,7 @@ module Immortal
     end
 
     def undeleted_clause_sql
-      unscoped.where(arel_table[:deleted].eq(nil).or(arel_table[:deleted].eq(false))).constraints.first.to_sql
+      unscoped.where(:deleted => false).constraints.first.to_sql
     end
 
     def deleted_clause_sql
@@ -103,8 +99,13 @@ module Immortal
 
   module InstanceMethods
     def self.included(base)
+      unless base.columns_hash["deleted"] && !base.columns_hash["deleted"].null
+        Kernel.warn "[Immortal] The 'deleted' column in #{base.to_s} is nullable, change the column to not accept NULL values"
+      end
+
       base.class_eval do
-        default_scope where(arel_table[:deleted].eq(nil).or(arel_table[:deleted].eq(false))) if arel_table[:deleted]
+        default_scope where(:deleted => false) if arel_table[:deleted]
+
         alias :mortal_destroy :destroy
         alias :destroy :immortal_destroy
       end
