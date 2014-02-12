@@ -114,6 +114,7 @@ module Immortal
       run_callbacks :destroy do
         destroy_without_callbacks
       end
+      run_callbacks :commit
     end
 
     def destroy!

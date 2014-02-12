@@ -106,6 +106,11 @@ describe Immortal do
     @m.after_d.should be_true
   end
 
+  it "should execute the after_commit callback when immortally destroyed" do
+    @m.destroy
+    @m.after_c.should be_true
+  end
+
   it "should not execute the before_update callback when immortally destroyed" do
     @m.destroy
     @m.before_u.should be_nil
@@ -124,6 +129,11 @@ describe Immortal do
   it "should not execute the after_destroy callback when immortally destroyed without callbacks" do
     @m.destroy_without_callbacks
     @m.after_d.should be_nil
+  end
+
+  it "should execute the after_commit callback when immortally destroyed without callbacks" do
+    @m.destroy_without_callbacks
+    @m.after_c.should be_true
   end
 
   it "should immortally delete all records with delete_all" do

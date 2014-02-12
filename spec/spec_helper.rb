@@ -101,12 +101,13 @@ class ImmortalModel < ActiveRecord::Base
   has_many :joins, :class_name => 'ImmortalJoin', :dependent => :delete_all
   has_many :nodes, :through => :joins, :source => :immortal_node, :dependent => :destroy
 
-  attr_accessor :before_d, :after_d, :before_u, :after_u
+  attr_accessor :before_d, :after_d, :before_u, :after_u, :after_c
 
   before_destroy   :set_before
   after_destroy    :set_after
   before_update    :set_before_update
   after_update     :set_after_update
+  after_commit     :set_after_commit
 
   private
   def set_before
@@ -123,6 +124,10 @@ class ImmortalModel < ActiveRecord::Base
 
   def set_before_update
     @before_u = true
+  end
+
+  def set_after_commit
+    @after_c = true
   end
 
 end
