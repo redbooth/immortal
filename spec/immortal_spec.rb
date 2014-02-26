@@ -96,34 +96,50 @@ describe Immortal do
     ImmortalModel.calculate(:sum, :value).should == 20
   end
 
-  it "should execute the before_destroy callback when immortally destroyed" do
-    @m.destroy
-    @m.before_d.should be_true
-  end
+  describe 'callbacks' do
+    context 'when immortally destroyed' do
+      before do
+        @m.destroy
+      end
 
-  it "should execute the after_destroy callback when immortally destroyed" do
-    @m.destroy
-    @m.after_d.should be_true
-  end
+      it "should execute the before_destroy callback" do
+        @m.before_d.should be_true
+      end
 
-  it "should not execute the before_update callback when immortally destroyed" do
-    @m.destroy
-    @m.before_u.should be_nil
-  end
+      it "should execute the after_destroy callback" do
+        @m.after_d.should be_true
+      end
 
-  it "should not execute the after_update callback when immortally destroyed" do
-    @m.destroy
-    @m.after_u.should be_nil
-  end
+      it "should execute the after_commit callback" do
+        @m.after_c.should be_true
+      end
 
-  it "should not execute the before_destroy callback when immortally destroyed without callbacks" do
-    @m.destroy_without_callbacks
-    @m.before_d.should be_nil
-  end
+      it "should not execute the before_update callback" do
+        @m.before_u.should be_nil
+      end
 
-  it "should not execute the after_destroy callback when immortally destroyed without callbacks" do
-    @m.destroy_without_callbacks
-    @m.after_d.should be_nil
+      it "should not execute the after_update callback" do
+        @m.after_u.should be_nil
+      end
+    end
+
+    context 'when immortally destroyed without callbacks' do
+      before do
+        @m.destroy_without_callbacks
+      end
+
+      it "should not execute the before_destroy callback" do
+        @m.before_d.should be_nil
+      end
+
+      it "should not execute the after_destroy callback when immortally destroyed without callbacks" do
+        @m.after_d.should be_nil
+      end
+
+      it "should execute the after_commit callback when immortally destroyed without callbacks" do
+        @m.after_c.should be_true
+      end
+    end
   end
 
   it "should immortally delete all records with delete_all" do
