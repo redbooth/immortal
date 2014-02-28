@@ -99,7 +99,7 @@ module Immortal
 
   module InstanceMethods
     def self.included(base)
-      unless base.columns_hash["deleted"] && !base.columns_hash["deleted"].null
+      unless base.table_exists? && base.columns_hash["deleted"] && !base.columns_hash["deleted"].null
         Kernel.warn "[Immortal] The 'deleted' column in #{base.to_s} is nullable, change the column to not accept NULL values"
       end
 
