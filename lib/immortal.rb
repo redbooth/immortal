@@ -12,8 +12,8 @@ module Immortal
         # In has_many through: join_model we have to explicitly add
         # the 'not deleted' scope, otherwise it will take all the rows
         # from the join model
-        def has_many_mortal(association_id, options = {}, &extension)
-          has_many_immortal(association_id, options, &extension).tap do
+        def has_many_mortal(association_id, scope = nil, options = {}, &extension)
+          has_many_immortal(association_id, scope = nil, options, &extension).tap do
             # FIXME This must be re-implemented after the ActiveRecord internals refactor in 3.1
           end
         end
