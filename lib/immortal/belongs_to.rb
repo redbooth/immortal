@@ -10,7 +10,7 @@ module Immortal
           # Add with/how_deleted singular association readers
           def belongs_to_mortal(name, scope = nil, options = {})
             reflection = ::Immortal::BelongsToBuilder.build(self, name, scope, options)
-            Reflection.add_reflection self, name, reflection
+            ::ActiveRecord::Associations::Reflection.add_reflection self, name, reflection
           end
 
           alias_method :belongs_to_immortal, :belongs_to
