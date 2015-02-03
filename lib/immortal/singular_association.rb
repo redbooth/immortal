@@ -12,18 +12,6 @@ module Immortal
 
     private
 
-      def reset_with_deleted
-        @with_deleted_loaded = false
-        ActiveRecord::IdentityMap.remove(with_deleted_target) if ActiveRecord::IdentityMap.enabled? && with_deleted_target
-        @with_deleted_target = nil
-      end
-
-      def reset_only_deleted
-        @only_deleted_loaded = false
-        ActiveRecord::IdentityMap.remove(only_deleted_target) if ActiveRecord::IdentityMap.enabled? && only_deleted_target
-        @only_deleted_target = nil
-      end
-
       def with_deleted_loaded!
         @with_deleted_loaded      = true
         @with_deleted_stale_state = stale_state
@@ -51,14 +39,12 @@ module Immortal
       end
 
       def reload_only_deleted
-        reset_only_deleted
         reset_scope
         load_only_deleted_target
         self unless only_deleted_target.nil?
       end
 
       def reload_with_deleted
-        reset_with_deleted
         reset_scope
         load_with_deleted_target
         self unless with_deleted_target.nil?
@@ -74,15 +60,7 @@ module Immortal
 
       def load_with_deleted_target
         if find_with_deleted_target?
-          begin
-            if ActiveRecord::IdentityMap.enabled? && association_class && association_class.respond_to?(:base_class)
-              @with_deleted_target = ActiveRecord::IdentityMap.get(association_class, owner[reflection.foreign_key])
-            end
-          rescue NameError
-            nil
-          ensure
-            @with_deleted_target ||= find_with_deleted_target
-          end
+          @with_deleted_target ||= find_with_deleted_target
         end
         with_deleted_loaded! unless with_deleted_loaded?
         with_deleted_target
@@ -92,15 +70,7 @@ module Immortal
 
       def load_only_deleted_target
         if find_only_deleted_target?
-          begin
-            if ActiveRecord::IdentityMap.enabled? && association_class && association_class.respond_to?(:base_class)
-              @only_deleted_target = ActiveRecord::IdentityMap.get(association_class, owner[reflection.foreign_key])
-            end
-          rescue NameError
-            nil
-          ensure
-            @only_deleted_target ||= find_only_deleted_target
-          end
+          @only_deleted_target ||= find_only_deleted_target
         end
         only_deleted_loaded! unless only_deleted_loaded?
         only_deleted_target
@@ -131,16 +101,12 @@ module Immortal
 
       def find_with_deleted_target
         return nil unless klass
-        klass.unscoped do
-          scoped.first.tap { |record| set_inverse_instance(record) }
-        end
+        klass.unscoped.first.tap { |record| set_inverse_instance(record) }
       end
 
       def find_only_deleted_target
         return nil unless klass
-        klass.unscoped do
-          scoped.where(:deleted => true).first.tap { |record| set_inverse_instance(record) }
-        end
+        klass.unscoped.where(:deleted => true).first.tap { |record| set_inverse_instance(record) }
       end
 
   end

@@ -4,21 +4,19 @@ require 'immortal/singular_association'
 module Immortal
   class BelongsToBuilder < ::ActiveRecord::Associations::Builder::BelongsTo
 
-    def define_accessors
+    def self.define_accessors(mixin, reflection)
       super
-      define_deletables
+      define_deletables(mixin, reflection.name)
     end
 
     private
 
-      def define_deletables
-        define_with_deleted_reader
-        define_only_deleted_reader
+      def self.define_deletables(mixin, name)
+        define_with_deleted_reader(mixin, name)
+        define_only_deleted_reader(mixin, name)
       end
 
-      def define_with_deleted_reader
-        name = self.name
-
+      def self.define_with_deleted_reader(model, name)
         model.redefine_method("#{name}_with_deleted") do |*params|
           assoc = association(name)
           assoc.send(:extend, SingularAssociation)
@@ -26,21 +24,13 @@ module Immortal
         end
       end
 
-      def define_only_deleted_reader
-        name = self.name
-
+      def self.define_only_deleted_reader(model, name)
         model.redefine_method("#{name}_only_deleted") do |*params|
-
           assoc = association(name)
           assoc.send(:extend, SingularAssociation)
           assoc.only_deleted_reader(*params)
         end
       end
-
-      module InstanceMethods
-
-      end #InstanceMethods
-
   end
 end
 

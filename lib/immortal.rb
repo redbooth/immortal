@@ -32,7 +32,7 @@ module Immortal
       new_scope = new_scope.where(non_immortal_constraints_sql)
 
       unscoped do
-        with_scope(new_scope) do
+        new_scope.scoping do
           yield
         end
       end
