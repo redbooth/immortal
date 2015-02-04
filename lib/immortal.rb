@@ -67,7 +67,7 @@ module Immortal
     end
 
     def immortal_delete_all(conditions = nil)
-      unscoped.update_all({deleted: 1}, conditions)
+      unscoped.where(conditions).update_all(:deleted => 1)
     end
 
     def delete_all!(*args)
@@ -111,15 +111,13 @@ module Immortal
     end
 
     def destroy_without_callbacks
-      self.class.unscoped.update_all({ deleted: true, updated_at: current_time_from_proper_timezone }, "id = #{self.id}")
-      @destroyed = true
+      self.class.unscoped.where(id: self.id).update_all(deleted: true, updated_at: current_time_from_proper_timezone )
       reload
       freeze
     end
 
     def recover!
-      self.class.unscoped.update_all({ deleted: false, updated_at: current_time_from_proper_timezone }, "id = #{self.id}")
-      @destroyed = false
+      self.class.unscoped.where(id: self.id).update_all(deleted: false, updated_at: current_time_from_proper_timezone )
       reload
     end
 
