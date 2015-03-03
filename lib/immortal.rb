@@ -124,12 +124,14 @@ module Immortal
 
     def destroy_without_callbacks
       self.class.unscoped.update_all({ :deleted => true }, "id = #{self.id}")
+      @destroyed = true
       reload
       freeze
     end
 
     def recover!
       self.class.unscoped.update_all({ :deleted => false }, "id = #{self.id}")
+      @destroyed = false
       reload
     end
 

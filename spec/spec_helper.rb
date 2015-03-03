@@ -113,7 +113,7 @@ class ImmortalModel < ActiveRecord::Base
   after_destroy    :set_after
   before_update    :set_before_update
   after_update     :set_after_update
-  after_commit     :set_after_commit
+  after_commit     :set_after_commit, on: :destroy
 
   private
 
