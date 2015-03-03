@@ -107,7 +107,7 @@ class ImmortalModel < ActiveRecord::Base
   has_many :joins, :class_name => 'ImmortalJoin', :dependent => :delete_all
   has_many :nodes, :through => :joins, :source => :immortal_node, :dependent => :destroy
 
-  attr_accessor :before_d, :after_d, :before_u, :after_u, :after_commit
+  attr_accessor :before_d, :after_d, :before_u, :after_u, :after_commit, :before_return
 
   before_destroy   :set_before
   after_destroy    :set_after
@@ -119,6 +119,7 @@ class ImmortalModel < ActiveRecord::Base
 
   def set_before
     @before_d = true
+    @before_return
   end
 
   def set_after

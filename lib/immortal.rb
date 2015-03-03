@@ -112,10 +112,11 @@ module Immortal
     end
 
     def immortal_destroy
-      run_callbacks :destroy do
-        destroy_without_callbacks
+      with_transaction_returning_status do
+        run_callbacks :destroy do
+          destroy_without_callbacks
+        end
       end
-      run_callbacks :commit
     end
 
     def destroy!
