@@ -332,7 +332,7 @@ describe Immortal do
   it "should not unscope associations when using with_deleted scope" do
     m1 = ImmortalModel.create! :title => 'previously created model'
     n1 = ImmortalNode.create! :title => 'previously created association'
-    j1 = ImmortalJoin.create! :immortal_model => m1, :immortal_node => n1
+    ImmortalJoin.create! :immortal_model => m1, :immortal_node => n1
 
     @n = ImmortalNode.create! :title => 'testing association'
     @join = ImmortalJoin.create! :immortal_model => @m, :immortal_node => @n
@@ -349,7 +349,7 @@ describe Immortal do
   it "should not unscope associations when using only_deleted scope" do
     m1 = ImmortalModel.create! :title => 'previously created model'
     n1 = ImmortalNode.create! :title => 'previously created association'
-    j1 = ImmortalJoin.create! :immortal_model => m1, :immortal_node => n1
+    ImmortalJoin.create! :immortal_model => m1, :immortal_node => n1
 
     @n = ImmortalNode.create! :title => 'testing association'
     @join = ImmortalJoin.create! :immortal_model => @m, :immortal_node => @n
