@@ -106,6 +106,19 @@ describe Immortal do
     @m.after_d.should be_true
   end
 
+  it "should execute the after_commit callback when immortally destroyed" do
+    @m.after_commit = false
+    @m.destroy
+    @m.after_commit.should be_true
+  end
+
+  it "should not return true when a before hook halts" do
+    @m.before_return = false
+    @m.after_commit = false
+    @m.destroy.should be_false
+    @m.after_commit.should_not be_true
+  end
+
   it "should not execute the before_update callback when immortally destroyed" do
     @m.destroy
     @m.before_u.should be_nil

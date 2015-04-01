@@ -112,8 +112,10 @@ module Immortal
     end
 
     def immortal_destroy
-      run_callbacks :destroy do
-        destroy_without_callbacks
+      with_transaction_returning_status do
+        run_callbacks :destroy do
+          destroy_without_callbacks
+        end
       end
     end
 
@@ -123,12 +125,14 @@ module Immortal
 
     def destroy_without_callbacks
       self.class.unscoped.update_all({ :deleted => true }, "id = #{self.id}")
+      @destroyed = true
       reload
       freeze
     end
 
     def recover!
       self.class.unscoped.update_all({ :deleted => false }, "id = #{self.id}")
+      @destroyed = false
       reload
     end
 
