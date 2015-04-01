@@ -21,6 +21,12 @@ describe Immortal do
     @m.should_not be_changed
   end
 
+  it "should not be dirty using #destroy" do
+    expect {
+      @m.destroy
+    }.to change(@m, :updated_at)
+  end
+
   it "should be deleted from the database using #destroy!" do
     expect {
       @m.destroy!
@@ -161,7 +167,9 @@ describe Immortal do
   it "should be recoverable" do
     @m.destroy
     @m = ImmortalModel.find_with_deleted(@m.id)
-    @m.recover!
+    expect {
+      @m.recover!
+    }.to change(@m, :updated_at)
     @m.should_not be_frozen
     @m.should_not be_changed
     ImmortalModel.first.should == @m

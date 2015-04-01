@@ -124,16 +124,22 @@ module Immortal
     end
 
     def destroy_without_callbacks
-      self.class.unscoped.update_all({ :deleted => true }, "id = #{self.id}")
+      self.class.unscoped.update_all({ deleted: true, updated_at: current_time_from_proper_timezone }, "id = #{self.id}")
       @destroyed = true
       reload
       freeze
     end
 
     def recover!
-      self.class.unscoped.update_all({ :deleted => false }, "id = #{self.id}")
+      self.class.unscoped.update_all({ deleted: false, updated_at: current_time_from_proper_timezone }, "id = #{self.id}")
       @destroyed = false
       reload
+    end
+
+    private
+
+    def current_time_from_proper_timezone
+      ActiveRecord::Base.default_timezone == :utc ? Time.now.utc : Time.now
     end
 
   end
