@@ -9,7 +9,7 @@ module Immortal
     base.class_eval do
       class << self
 
-        # In has_many :through => join_model we have to explicitly add
+        # In has_many through: join_model we have to explicitly add
         # the 'not deleted' scope, otherwise it will take all the rows
         # from the join model
         def has_many_mortal(association_id, options = {}, &extension)
@@ -52,7 +52,7 @@ module Immortal
     end
 
     def exists?(id = false)
-      where(:deleted => false).exists?(id)
+      where(deleted: false).exists?(id)
     end
 
     def count_with_deleted(*args)
@@ -63,7 +63,7 @@ module Immortal
 
     def count_only_deleted(*args)
       without_default_scope do
-        where(:deleted => true).count(*args)
+        where(deleted: true).count(*args)
       end
     end
 
@@ -75,12 +75,12 @@ module Immortal
 
     def find_only_deleted(*args)
       without_default_scope do
-        where(:deleted => true).find(*args)
+        where(deleted: true).find(*args)
       end
     end
 
     def immortal_delete_all(conditions = nil)
-      unscoped.update_all({:deleted => 1}, conditions)
+      unscoped.update_all({deleted: 1}, conditions)
     end
 
     def delete_all!(*args)
@@ -88,7 +88,7 @@ module Immortal
     end
 
     def undeleted_clause_sql
-      unscoped.where(:deleted => false).constraints.first.to_sql
+      unscoped.where(deleted: false).constraints.first.to_sql
     end
 
     def deleted_clause_sql
@@ -104,7 +104,7 @@ module Immortal
       end
 
       base.class_eval do
-        default_scope where(:deleted => false) if arel_table[:deleted]
+        default_scope where(deleted: false) if arel_table[:deleted]
 
         alias :mortal_destroy :destroy
         alias :destroy :immortal_destroy
@@ -124,16 +124,22 @@ module Immortal
     end
 
     def destroy_without_callbacks
-      self.class.unscoped.update_all({ :deleted => true }, "id = #{self.id}")
+      self.class.unscoped.update_all({ deleted: true, updated_at: current_time_from_proper_timezone }, "id = #{self.id}")
       @destroyed = true
       reload
       freeze
     end
 
     def recover!
-      self.class.unscoped.update_all({ :deleted => false }, "id = #{self.id}")
+      self.class.unscoped.update_all({ deleted: false, updated_at: current_time_from_proper_timezone }, "id = #{self.id}")
       @destroyed = false
       reload
+    end
+
+    private
+
+    def current_time_from_proper_timezone
+      ActiveRecord::Base.default_timezone == :utc ? Time.now.utc : Time.now
     end
 
   end
