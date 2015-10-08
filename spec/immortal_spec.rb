@@ -175,6 +175,35 @@ describe Immortal do
     ImmortalModel.first.should == @m
   end
 
+  it "updates updated_at with recreate!" do
+    @m.destroy
+    @m = ImmortalModel.find_with_deleted(@m.id)
+    expect {
+      @m.recreate!
+    }.to change(@m, :updated_at)
+    @m.should_not be_frozen
+    @m.should_not be_changed
+    ImmortalModel.first.should == @m
+  end
+
+  it "updates created_at with recreate!" do
+    @m.destroy
+    @m = ImmortalModel.find_with_deleted(@m.id)
+    expect {
+      @m.recreate!
+    }.to change(@m, :created_at)
+    @m.should_not be_frozen
+    @m.should_not be_changed
+    ImmortalModel.first.should == @m
+  end
+
+  it "runs create callbacks with recreate!" do
+    @m.destroy
+    @m = ImmortalModel.find_with_deleted(@m.id)
+    @m.recreate!
+    @m.after_c.should be_true
+  end
+
   it "should consider an Many-to-many association with through as deleted when the join is deleted." do
     @n = ImmortalNode.create! :title => 'testing association'
     @join = ImmortalJoin.create! :immortal_model => @m, :immortal_node => @n

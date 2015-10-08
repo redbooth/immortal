@@ -78,7 +78,7 @@ class ImmortalNode < ActiveRecord::Base
 
   has_many :immortal_joins
   has_many :immortal_models, :through => :immortal_joins
-  
+
   has_many :joins, :class_name => 'ImmortalJoin'
   has_many :models, :through => :joins, :source => :immortal_model
 
@@ -107,10 +107,11 @@ class ImmortalModel < ActiveRecord::Base
   has_many :joins, :class_name => 'ImmortalJoin', :dependent => :delete_all
   has_many :nodes, :through => :joins, :source => :immortal_node, :dependent => :destroy
 
-  attr_accessor :before_d, :after_d, :before_u, :after_u, :after_commit, :before_return
+  attr_accessor :before_d, :after_d, :before_u, :after_u, :after_c, :after_commit, :before_return
 
   before_destroy   :set_before
   after_destroy    :set_after
+  after_create     :set_after_create
   before_update    :set_before_update
   after_update     :set_after_update
   after_commit     :set_after_commit, on: :destroy
@@ -138,6 +139,9 @@ class ImmortalModel < ActiveRecord::Base
     @before_u = true
   end
 
+  def set_after_create
+    @after_c = true
+  end
 end
 
 class ImmortalNullableDeleted < ActiveRecord::Base
