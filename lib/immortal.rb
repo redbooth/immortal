@@ -136,6 +136,19 @@ module Immortal
       reload
     end
 
+    def recreate!
+      with_transaction_returning_status do
+        run_callbacks :create do
+          self.class.unscoped.update_all({
+            deleted: false,
+            updated_at: current_time_from_proper_timezone,
+            created_at: current_time_from_proper_timezone }, "id = #{self.id}")
+          @destroyed = false
+          reload
+        end
+      end
+    end
+
     private
 
     def current_time_from_proper_timezone
