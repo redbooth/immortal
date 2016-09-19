@@ -129,7 +129,7 @@ module Immortal
     end
 
     def recover!
-      self.class.unscoped.update_all({ deleted: false, updated_at: current_time_from_proper_timezone }, "id = #{self.id}")
+      self.class.unscoped.where(id: id).update_all(deleted: false, updated_at: current_time_from_proper_timezone)
       @destroyed = false
       reload
     end
