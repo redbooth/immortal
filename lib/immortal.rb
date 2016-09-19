@@ -104,7 +104,7 @@ module Immortal
       end
 
       base.class_eval do
-        default_scope where(deleted: false) if arel_table[:deleted]
+        default_scope { where(deleted: false) } if arel_table[:deleted]
 
         alias :mortal_destroy :destroy
         alias :destroy :immortal_destroy
@@ -124,7 +124,7 @@ module Immortal
     end
 
     def destroy_without_callbacks
-      self.class.unscoped.update_all({ deleted: true, updated_at: current_time_from_proper_timezone }, "id = #{self.id}")
+      self.class.unscoped.where(id: id).update_all(deleted: true, updated_at: current_time_from_proper_timezone)
       @destroyed = true
       reload
       freeze
