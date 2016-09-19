@@ -12,15 +12,19 @@ module Immortal
 
     private
 
+      def supports_indetity_map?
+        defined?(ActiveRecord::IdentityMap) && ActiveRecord::IdentityMap.enabled?
+      end
+
       def reset_with_deleted
         @with_deleted_loaded = false
-        ActiveRecord::IdentityMap.remove(with_deleted_target) if ActiveRecord::IdentityMap.enabled? && with_deleted_target
+        ActiveRecord::IdentityMap.remove(with_deleted_target) if supports_indetity_map? && with_deleted_target
         @with_deleted_target = nil
       end
 
       def reset_only_deleted
         @only_deleted_loaded = false
-        ActiveRecord::IdentityMap.remove(only_deleted_target) if ActiveRecord::IdentityMap.enabled? && only_deleted_target
+        ActiveRecord::IdentityMap.remove(only_deleted_target) if supports_indetity_map? && only_deleted_target
         @only_deleted_target = nil
       end
 
@@ -75,7 +79,7 @@ module Immortal
       def load_with_deleted_target
         if find_with_deleted_target?
           begin
-            if ActiveRecord::IdentityMap.enabled? && association_class && association_class.respond_to?(:base_class)
+            if supports_indetity_map? && association_class && association_class.respond_to?(:base_class)
               @with_deleted_target = ActiveRecord::IdentityMap.get(association_class, owner[reflection.foreign_key])
             end
           rescue NameError
@@ -93,7 +97,7 @@ module Immortal
       def load_only_deleted_target
         if find_only_deleted_target?
           begin
-            if ActiveRecord::IdentityMap.enabled? && association_class && association_class.respond_to?(:base_class)
+            if supports_indetity_map? && association_class && association_class.respond_to?(:base_class)
               @only_deleted_target = ActiveRecord::IdentityMap.get(association_class, owner[reflection.foreign_key])
             end
           rescue NameError
