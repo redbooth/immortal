@@ -15,7 +15,7 @@ RSpec.configure do |config|
 end
 
 
-ActiveRecord::Base.establish_connection(:adapter => "sqlite3", :database => ":memory:")
+ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: ":memory:")
 ActiveRecord::Base.logger = Logger.new(STDOUT) if ENV['DEBUG']
 
 old_stdout = $stdout
@@ -26,13 +26,13 @@ begin
     create_table :immortal_models do |t|
       t.string :title
       t.integer :value
-      t.boolean :deleted, :default => false, :null => false
+      t.boolean :deleted, default: false, null: false
       t.timestamps
     end
     create_table :immortal_joins do |t|
       t.integer :immortal_model_id
       t.integer :immortal_node_id
-      t.boolean :deleted, :default => false, :null => false
+      t.boolean :deleted, default: false, null: false
       t.timestamps
     end
     create_table :immortal_nodes do |t|
@@ -40,25 +40,25 @@ begin
       t.string :target_type
       t.string :title
       t.integer :value
-      t.boolean :deleted, :default => false, :null => false
+      t.boolean :deleted, default: false, null: false
       t.timestamps
     end
 
     create_table :immortal_some_targets do |t|
       t.string :title
-      t.boolean :deleted, :default => false, :null => false
+      t.boolean :deleted, default: false, null: false
       t.timestamps
     end
 
     create_table :immortal_some_other_targets do |t|
       t.string :title
-      t.boolean :deleted, :default => false, :null => false
+      t.boolean :deleted, default: false, null: false
       t.timestamps
     end
 
     create_table :immortal_nullable_deleteds do |t|
       t.string :title
-      t.boolean :deleted, :default => false
+      t.boolean :deleted, default: false
       t.timestamps
     end
   end
@@ -70,42 +70,42 @@ class ImmortalJoin < ActiveRecord::Base
   include Immortal
 
   belongs_to :immortal_model
-  belongs_to :immortal_node, :dependent => :destroy
+  belongs_to :immortal_node, dependent: :destroy
 end
 
 class ImmortalNode < ActiveRecord::Base
   include Immortal
 
   has_many :immortal_joins
-  has_many :immortal_models, :through => :immortal_joins
+  has_many :immortal_models, through: :immortal_joins
   
-  has_many :joins, :class_name => 'ImmortalJoin'
-  has_many :models, :through => :joins, :source => :immortal_model
+  has_many :joins, class_name: 'ImmortalJoin'
+  has_many :models, through: :joins, source: :immortal_model
 
-  belongs_to :target, :polymorphic => true
+  belongs_to :target, polymorphic: true
 end
 
 class ImmortalSomeTarget < ActiveRecord::Base
   include Immortal
 
-  has_many :immortal_nodes, :as => :target
+  has_many :immortal_nodes, as: :target
 end
 
 class ImmortalSomeOtherTarget < ActiveRecord::Base
   include Immortal
 
-  has_many :immortal_nodes, :as => :target
+  has_many :immortal_nodes, as: :target
 end
 
 
 class ImmortalModel < ActiveRecord::Base
   include Immortal
 
-  has_many :immortal_nodes, :through => :immortal_joins, :dependent => :destroy
-  has_many :immortal_joins, :dependent => :delete_all
+  has_many :immortal_nodes, through: :immortal_joins, dependent: :destroy
+  has_many :immortal_joins, dependent: :delete_all
 
-  has_many :joins, :class_name => 'ImmortalJoin', :dependent => :delete_all
-  has_many :nodes, :through => :joins, :source => :immortal_node, :dependent => :destroy
+  has_many :joins, class_name: 'ImmortalJoin', dependent: :delete_all
+  has_many :nodes, through: :joins, source: :immortal_node, dependent: :destroy
 
   attr_accessor :before_d, :after_d, :before_u, :after_u, :after_commit, :before_return
 
