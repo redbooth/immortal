@@ -78,7 +78,7 @@ module Immortal
     end
 
     def immortal_delete_all(conditions = nil)
-      unscoped.update_all({deleted: 1}, conditions)
+      unscoped.where(conditions).update_all(deleted: 1)
     end
 
     def delete_all!(*args)
