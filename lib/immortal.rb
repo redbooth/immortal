@@ -89,7 +89,7 @@ module Immortal
       end
 
       base.class_eval do
-        default_scope { where(deleted: false) } if arel_table[:deleted]
+        default_scope { ->{ where(deleted: false) } } if arel_table[:deleted]
 
         alias :mortal_destroy :destroy
         alias :destroy :immortal_destroy
