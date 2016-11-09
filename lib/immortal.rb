@@ -52,13 +52,27 @@ module Immortal
       end
     end
 
+    def where_with_deleted(*args)
+      without_default_scope do
+        where(*args)
+      end
+    end
+
     def find_with_deleted(*args)
+      ActiveSupport::Deprecation.warn('[immortal] we are deprecating #find_with_deleted use where_with_deleted instead')
       without_default_scope do
         find(*args)
       end
     end
 
+    def where_only_deleted(*args)
+      without_default_scope do
+        where(deleted: true).where(args)
+      end
+    end
+
     def find_only_deleted(*args)
+      ActiveSupport::Deprecation.warn('[immortal] we are deprecating #find_only_deleted use where_only_deleted instead')
       without_default_scope do
         where(deleted: true).find(*args)
       end
