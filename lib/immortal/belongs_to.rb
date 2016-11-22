@@ -8,8 +8,8 @@ module Immortal
         class << self
 
           # Add with/how_deleted singular association readers
-          def belongs_to_mortal(name, options = {})
-            ::Immortal::BelongsToBuilder.build(self, name, options)
+          def belongs_to_mortal(name, scope = nil, options = {})
+            ::Immortal::BelongsToBuilder.build(self, name, scope, options)
           end
 
           alias_method :belongs_to_immortal, :belongs_to
