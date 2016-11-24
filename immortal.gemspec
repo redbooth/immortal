@@ -3,8 +3,11 @@ $LOAD_PATH.push File.expand_path('../lib', __FILE__)
 
 Gem::Specification.new do |s|
   s.name        = 'immortal'
-  s.version     = '1.0.5'
-  s.authors     = ['Jordi Romero', 'Saimon Moore']
+  s.version     = '2.0.0'
+  s.authors     = [
+    'Jordi Romero', 'Saimon Moore', 'Pau Ramon', 'Carlos Saura', 'Andres Bravo',
+    'Fran Casas', 'Pau Perez'
+  ]
   s.email       = ['jordi@jrom.net', 'saimon@saimonmoore.net']
   s.homepage    = 'http://github.com/teambox/immortal'
   s.summary     = 'Replacement for acts_as_paranoid for Rails 4'
