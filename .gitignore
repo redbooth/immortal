@@ -3,3 +3,4 @@ pkg/*
 .bundle
 .Gemfile.lock
 Gemfile.lock
+bin
