@@ -1,6 +1,6 @@
 Bundler.require(:default, :development)
 require 'rspec'
-require File.expand_path("../../lib/immortal", __FILE__)
+require File.expand_path('../../lib/immortal', __FILE__)
 require 'active_record'
 require 'sqlite3'
 require 'logger'
@@ -14,8 +14,7 @@ RSpec.configure do |config|
   end
 end
 
-
-ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: ":memory:")
+ActiveRecord::Base.establish_connection(adapter: 'sqlite3', database: ':memory:')
 ActiveRecord::Base.logger = Logger.new(STDOUT) if ENV['DEBUG']
 
 old_stdout = $stdout
@@ -78,7 +77,7 @@ class ImmortalNode < ActiveRecord::Base
 
   has_many :immortal_joins
   has_many :immortal_models, through: :immortal_joins
-  
+
   has_many :joins, class_name: 'ImmortalJoin'
   has_many :models, through: :joins, source: :immortal_model
 
@@ -96,7 +95,6 @@ class ImmortalSomeOtherTarget < ActiveRecord::Base
 
   has_many :immortal_nodes, as: :target
 end
-
 
 class ImmortalModel < ActiveRecord::Base
   include Immortal
@@ -137,9 +135,7 @@ class ImmortalModel < ActiveRecord::Base
   def set_before_update
     @before_u = true
   end
-
 end
 
 class ImmortalNullableDeleted < ActiveRecord::Base
 end
-
