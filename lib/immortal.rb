@@ -1,10 +1,13 @@
 require 'immortal/belongs_to'
 
 module Immortal
+  COLUMN_NAME = 'deleted'.freeze
+
   def self.included(base)
     base.send :extend, ClassMethods
     base.send :include, InstanceMethods
     base.send :include, BelongsTo
+
     base.class_eval do
       class << self
         alias_method :mortal_delete_all, :delete_all
@@ -24,7 +27,7 @@ module Immortal
       our_scope = current_scope || unscoped
 
       non_immortal_constraints_sql = our_scope.arel.constraints.to_a.map do |constraint|
-        constraint.to_sql.split('AND').reject { |clause| clause.include?('deleted') }
+        constraint.to_sql.split('AND').reject { |clause| clause.include?(COLUMN_NAME) }
       end.flatten.join(' AND ')
 
       new_scope = new_scope.merge(our_scope.except(:where))
@@ -57,23 +60,9 @@ module Immortal
       end
     end
 
-    def find_with_deleted(*args)
-      ActiveSupport::Deprecation.warn('[immortal] we are deprecating #find_with_deleted use where_with_deleted instead')
-      without_default_scope do
-        find(*args)
-      end
-    end
-
     def where_only_deleted(conditions)
       without_default_scope do
         where(deleted: true).where(conditions)
-      end
-    end
-
-    def find_only_deleted(*args)
-      ActiveSupport::Deprecation.warn('[immortal] we are deprecating #find_only_deleted use where_only_deleted instead')
-      without_default_scope do
-        where(deleted: true).find(*args)
       end
     end
 
@@ -96,7 +85,7 @@ module Immortal
 
   module InstanceMethods
     def self.included(base)
-      unless base.table_exists? && base.columns_hash['deleted'] && !base.columns_hash['deleted'].null
+      unless base.table_exists? && base.columns_hash[COLUMN_NAME] && !base.columns_hash[COLUMN_NAME].null
         Kernel.warn "[Immortal] The 'deleted' column in #{base} is nullable, change the column to not accept NULL values"
       end
 
