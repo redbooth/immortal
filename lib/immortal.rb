@@ -30,9 +30,7 @@ module Immortal
       new_scope = new_scope.merge(our_scope.except(:where))
       new_scope = new_scope.where(non_immortal_constraints_sql)
 
-      unscoped
-        .merge(new_scope)
-        .scoping do
+      unscoped.merge(new_scope).scoping do
         yield
       end
     end
