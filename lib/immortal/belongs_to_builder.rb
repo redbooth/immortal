@@ -34,8 +34,5 @@ module Immortal
         assoc.only_deleted_reader(*params)
       end
     end
-
-    module InstanceMethods
-    end # InstanceMethods
   end
 end
