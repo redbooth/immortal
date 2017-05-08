@@ -3,3 +3,6 @@ pkg/*
 .bundle
 .Gemfile.lock
 Gemfile.lock
+bin
+spec/examples.txt
+.byebug_history

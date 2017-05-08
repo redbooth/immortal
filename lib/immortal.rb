@@ -1,31 +1,30 @@
 require 'immortal/belongs_to'
 
 module Immortal
-
   def self.included(base)
     base.send :extend, ClassMethods
     base.send :include, InstanceMethods
     base.send :include, BelongsTo
     base.class_eval do
       class << self
-        alias :mortal_delete_all :delete_all
-        alias :delete_all :immortal_delete_all
+        alias_method :mortal_delete_all, :delete_all
+        alias_method :delete_all, :immortal_delete_all
       end
     end
   end
 
   module ClassMethods
-
+    # @return [Boolean] whether the model supports immortal or not
     def immortal?
-      self.included_modules.include?(::Immortal::InstanceMethods)
+      included_modules.include?(::Immortal::InstanceMethods)
     end
 
     def without_default_scope
-      new_scope = self.unscoped
-      our_scope = self.current_scope || self.unscoped
+      new_scope = unscoped
+      our_scope = current_scope || unscoped
 
       non_immortal_constraints_sql = our_scope.arel.constraints.to_a.map do |constraint|
-        constraint.to_sql.split('AND').reject{|clause| clause.include?('deleted')}
+        constraint.to_sql.split('AND').reject { |clause| clause.include?('deleted') }
       end.flatten.join(' AND ')
 
       new_scope = new_scope.merge(our_scope.except(:where))
@@ -52,9 +51,9 @@ module Immortal
       end
     end
 
-    def where_with_deleted(*args)
+    def where_with_deleted(conditions)
       without_default_scope do
-        where(*args)
+        where(conditions)
       end
     end
 
@@ -65,9 +64,9 @@ module Immortal
       end
     end
 
-    def where_only_deleted(*args)
+    def where_only_deleted(conditions)
       without_default_scope do
-        where(deleted: true).where(args)
+        where(deleted: true).where(conditions)
       end
     end
 
@@ -93,20 +92,19 @@ module Immortal
     def deleted_clause_sql
       unscoped.where(arel_table[:deleted].eq(true)).constraints.first.to_sql
     end
-
   end
 
   module InstanceMethods
     def self.included(base)
-      unless base.table_exists? && base.columns_hash["deleted"] && !base.columns_hash["deleted"].null
-        Kernel.warn "[Immortal] The 'deleted' column in #{base.to_s} is nullable, change the column to not accept NULL values"
+      unless base.table_exists? && base.columns_hash['deleted'] && !base.columns_hash['deleted'].null
+        Kernel.warn "[Immortal] The 'deleted' column in #{base} is nullable, change the column to not accept NULL values"
       end
 
       base.class_eval do
-        default_scope { ->{ where(deleted: false) } } if arel_table[:deleted]
+        default_scope { -> { where(deleted: false) } } if arel_table[:deleted]
 
-        alias :mortal_destroy :destroy
-        alias :destroy :immortal_destroy
+        alias_method :mortal_destroy, :destroy
+        alias_method :destroy, :immortal_destroy
       end
     end
 
@@ -140,6 +138,5 @@ module Immortal
     def current_time_from_proper_timezone
       ActiveRecord::Base.default_timezone == :utc ? Time.now.utc : Time.now
     end
-
   end
 end
