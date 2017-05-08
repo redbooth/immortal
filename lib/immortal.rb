@@ -14,6 +14,7 @@ module Immortal
   end
 
   module ClassMethods
+    # @return [Boolean] whether the model supports immortal or not
     def immortal?
       included_modules.include?(::Immortal::InstanceMethods)
     end
@@ -29,7 +30,9 @@ module Immortal
       new_scope = new_scope.merge(our_scope.except(:where))
       new_scope = new_scope.where(non_immortal_constraints_sql)
 
-      unscoped.merge(new_scope).scoping do
+      unscoped
+        .merge(new_scope)
+        .scoping do
         yield
       end
     end
@@ -50,9 +53,9 @@ module Immortal
       end
     end
 
-    def where_with_deleted(*args)
+    def where_with_deleted(conditions)
       without_default_scope do
-        where(*args)
+        where(conditions)
       end
     end
 
@@ -63,9 +66,9 @@ module Immortal
       end
     end
 
-    def where_only_deleted(*args)
+    def where_only_deleted(conditions)
       without_default_scope do
-        where(deleted: true).where(args)
+        where(deleted: true).where(conditions)
       end
     end
 
