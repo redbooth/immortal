@@ -16,7 +16,7 @@ gem 'immortal'
 
 ```ruby
 class User < ActiveRecord::Base
-include Immortal
+  include Immortal
 end
 ```
 
