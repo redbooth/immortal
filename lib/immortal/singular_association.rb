@@ -14,6 +14,10 @@ module Immortal
 
     private
 
+    attr_reader :with_deleted_loaded, :only_deleted_loaded
+    alias with_deleted_loaded? with_deleted_loaded
+    alias only_deleted_loaded? only_deleted_loaded
+
     def reset_with_deleted
       @with_deleted_loaded = false
       @with_deleted_target = nil
@@ -32,14 +36,6 @@ module Immortal
     def only_deleted_loaded!
       @only_deleted_loaded      = true
       @only_deleted_stale_state = stale_state
-    end
-
-    def with_deleted_loaded?
-      @with_deleted_loaded
-    end
-
-    def only_deleted_loaded?
-      @only_deleted_loaded
     end
 
     def stale_with_deleted_target?
