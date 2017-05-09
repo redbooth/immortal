@@ -3,33 +3,29 @@ require 'immortal/singular_association'
 
 module Immortal
   class BelongsToBuilder < ::ActiveRecord::Associations::Builder::BelongsTo
-    def define_accessors
+    def self.define_accessors(mixin, reflection)
       super
-      define_deletables
+      define_deletables(mixin, reflection)
     end
 
     private
 
-    def define_deletables
-      define_with_deleted_reader
-      define_only_deleted_reader
+    def self.define_deletables(mixin, reflection)
+      define_with_deleted_reader(mixin, reflection)
+      define_only_deleted_reader(mixin, reflection)
     end
 
-    def define_with_deleted_reader
-      name = self.name
-
-      model.redefine_method("#{name}_with_deleted") do |*params|
-        assoc = association(name)
+    def self.define_with_deleted_reader(mixin, reflection)
+      mixin.redefine_method("#{reflection.name}_with_deleted") do |*params|
+        assoc = association(reflection.name)
         assoc.send(:extend, SingularAssociation)
         assoc.with_deleted_reader(*params)
       end
     end
 
-    def define_only_deleted_reader
-      name = self.name
-
-      model.redefine_method("#{name}_only_deleted") do |*params|
-        assoc = association(name)
+    def self.define_only_deleted_reader(mixin, reflection)
+      mixin.redefine_method("#{reflection.name}_only_deleted") do |*params|
+        assoc = association(reflection.name)
         assoc.send(:extend, SingularAssociation)
         assoc.only_deleted_reader(*params)
       end

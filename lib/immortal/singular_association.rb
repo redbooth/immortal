@@ -52,22 +52,26 @@ module Immortal
       reset_only_deleted
       reset_scope
       load_only_deleted_target
-      self unless only_deleted_target.nil?
+      self if only_deleted_target
     end
 
     def reload_with_deleted
       reset_with_deleted
       reset_scope
       load_with_deleted_target
-      self unless with_deleted_target.nil?
+      self if with_deleted_target
     end
 
     def find_with_deleted_target?
-      !with_deleted_loaded? && (!owner.new_record? || foreign_key_present?) && klass
+      !with_deleted_loaded? &&
+        (!owner.new_record? || foreign_key_present?) &&
+        klass
     end
 
     def find_only_deleted_target?
-      !only_deleted_loaded? && (!owner.new_record? || foreign_key_present?) && klass
+      !only_deleted_loaded? &&
+        (!owner.new_record? || foreign_key_present?) &&
+        klass
     end
 
     def load_with_deleted_target
@@ -122,7 +126,9 @@ module Immortal
     def find_only_deleted_target
       return nil unless klass
       klass.unscoped do
-        scope.where(deleted: true).first.tap { |record| set_inverse_instance(record) }
+        scope.where(deleted: true).first.tap do |record|
+          set_inverse_instance(record)
+        end
       end
     end
   end
