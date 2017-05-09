@@ -10,9 +10,6 @@ module Immortal
     base.send :include, BelongsTo
 
     base.class_eval do
-      scope(:mortal, -> { where(COLUMN_NAME => false) })
-      scope(:immortal, -> { where(COLUMN_NAME => true) })
-
       class << self
         alias_method :mortal_delete_all, :delete_all
         alias_method :delete_all, :immortal_delete_all
@@ -97,6 +94,9 @@ module Immortal
       end
 
       base.class_eval do
+        scope(:mortal, -> { where(COLUMN_NAME => false) })
+        scope(:immortal, -> { where(COLUMN_NAME => true) })
+
         default_scope { -> { mortal } } if arel_table[COLUMN_NAME]
 
         alias_method :mortal_destroy, :destroy
