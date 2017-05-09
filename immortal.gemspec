@@ -1,31 +1,35 @@
-$LOAD_PATH.push File.expand_path('../lib', __FILE__)
+# coding: utf-8
+lib = File.expand_path('../lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require 'immortal/version'
 
-Gem::Specification.new do |s|
-  s.name        = 'immortal'
-  s.version     = '2.0.0'
-  s.authors     = [
+Gem::Specification.new do |spec|
+  spec.name          = 'immortal'
+  spec.version       = Immortal::VERSION
+  spec.authors       = [
     'Jordi Romero', 'Saimon Moore', 'Pau Ramon', 'Carlos Saura', 'Andres Bravo',
     'Fran Casas', 'Pau Perez'
   ]
-  s.email       = ['jordi@jrom.net', 'saimon@saimonmoore.net']
-  s.homepage    = 'http://github.com/teambox/immortal'
-  s.summary     = 'Replacement for acts_as_paranoid for Rails 4'
-  s.description = 'Typical paranoid gem built for Rails 4 and with the ' \
-                  "minimum code needed to satisfy acts_as_paranoid's API"
-  s.license     = 'MIT'
+  spec.email         = ['jordi@jrom.net', 'saimon@saimonmoore.net']
+  spec.homepage      = 'http://github.com/teambox/immortal'
+  spec.summary       = 'Replacement for acts_as_paranoid for Rails 4'
+  spec.description   = 'Typical paranoid gem built for Rails 4 and with the ' \
+                       "minimum code needed to satisfy acts_as_paranoid's API"
+  spec.license       = 'MIT'
 
-  s.files         = `git ls-files`.split("\n")
-  s.test_files    = `git ls-files -- {spec}/*`.split("\n")
-  s.executables   = `git ls-files -- bin/*`.split("\n").map { |f| File.basename(f) }
-  s.require_paths = ['lib']
+  spec.files         = `git ls-files -z`.split("\x0").reject do |f|
+    f.match(%r{^(test|spec|features)/})
+  end
+  spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
+  spec.require_paths = %w[lib]
 
-  s.add_dependency 'activerecord', '~> 4.1.0'
-  s.add_development_dependency 'rspec', '~> 3.6.0'
-  s.add_development_dependency 'rspec-its'
-  s.add_development_dependency 'sqlite3'
-  s.add_development_dependency 'byebug'
-  s.add_development_dependency 'rake', '~> 10.0'
-  s.add_development_dependency 'rubocop'
-  s.add_development_dependency 'rubocop-rspec'
-  s.add_development_dependency 'reek'
+  spec.add_dependency 'activerecord', '~> 4.1.0'
+  spec.add_development_dependency 'rspec', '~> 3.6.0'
+  spec.add_development_dependency 'rspec-its'
+  spec.add_development_dependency 'sqlite3'
+  spec.add_development_dependency 'byebug'
+  spec.add_development_dependency 'rake', '~> 10.0'
+  spec.add_development_dependency 'rubocop'
+  spec.add_development_dependency 'rubocop-rspec'
+  spec.add_development_dependency 'reek'
 end

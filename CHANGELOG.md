@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 ### Added
+
+- Modern gem management
+- Contributor Covenant CoC
+
 ### Changed
 
 - Upgraded rspec and tests syntax
