@@ -2,37 +2,40 @@ require 'active_record'
 require 'immortal/singular_association'
 
 module Immortal
+  # Builds a +belongs_to+ association with +_with_deleted+ and +_only_deleted+
+  # readers.
   class BelongsToBuilder < ::ActiveRecord::Associations::Builder::BelongsTo
-    def define_accessors
+    def self.define_accessors(mixin, reflection)
       super
-      define_deletables
+      define_deletables(mixin, reflection)
     end
 
-    private
-
-    def define_deletables
-      define_with_deleted_reader
-      define_only_deleted_reader
+    def self.define_deletables(mixin, reflection)
+      define_with_deleted_reader(mixin, reflection)
+      define_only_deleted_reader(mixin, reflection)
     end
+    private_class_method :define_deletables
 
-    def define_with_deleted_reader
-      name = self.name
+    def self.define_with_deleted_reader(mixin, reflection)
+      name = reflection.name
 
-      model.redefine_method("#{name}_with_deleted") do |*params|
+      mixin.redefine_method("#{name}_with_deleted") do |*params|
         assoc = association(name)
         assoc.send(:extend, SingularAssociation)
         assoc.with_deleted_reader(*params)
       end
     end
+    private_class_method :define_with_deleted_reader
 
-    def define_only_deleted_reader
-      name = self.name
+    def self.define_only_deleted_reader(mixin, reflection)
+      name = reflection.name
 
-      model.redefine_method("#{name}_only_deleted") do |*params|
+      mixin.redefine_method("#{name}_only_deleted") do |*params|
         assoc = association(name)
         assoc.send(:extend, SingularAssociation)
         assoc.only_deleted_reader(*params)
       end
     end
+    private_class_method :define_only_deleted_reader
   end
 end

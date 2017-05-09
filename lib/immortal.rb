@@ -1,10 +1,14 @@
 require 'immortal/belongs_to'
 
+# Include +Immortal+ module to activate soft delete on your model.
 module Immortal
+  COLUMN_NAME = 'deleted'.freeze
+
   def self.included(base)
     base.send :extend, ClassMethods
     base.send :include, InstanceMethods
     base.send :include, BelongsTo
+
     base.class_eval do
       class << self
         alias_method :mortal_delete_all, :delete_all
@@ -24,7 +28,7 @@ module Immortal
       our_scope = current_scope || unscoped
 
       non_immortal_constraints_sql = our_scope.arel.constraints.to_a.map do |constraint|
-        constraint.to_sql.split('AND').reject { |clause| clause.include?('deleted') }
+        constraint.to_sql.split('AND').reject { |clause| clause.include?(COLUMN_NAME) }
       end.flatten.join(' AND ')
 
       new_scope = new_scope.merge(our_scope.except(:where))
@@ -36,7 +40,7 @@ module Immortal
     end
 
     def exists?(id = false)
-      where(deleted: false).exists?(id)
+      mortal.exists?(id)
     end
 
     def count_with_deleted(*args)
@@ -47,7 +51,7 @@ module Immortal
 
     def count_only_deleted(*args)
       without_default_scope do
-        where(deleted: true).count(*args)
+        immortal.count(*args)
       end
     end
 
@@ -57,28 +61,14 @@ module Immortal
       end
     end
 
-    def find_with_deleted(*args)
-      ActiveSupport::Deprecation.warn('[immortal] we are deprecating #find_with_deleted use where_with_deleted instead')
-      without_default_scope do
-        find(*args)
-      end
-    end
-
     def where_only_deleted(conditions)
       without_default_scope do
-        where(deleted: true).where(conditions)
-      end
-    end
-
-    def find_only_deleted(*args)
-      ActiveSupport::Deprecation.warn('[immortal] we are deprecating #find_only_deleted use where_only_deleted instead')
-      without_default_scope do
-        where(deleted: true).find(*args)
+        immortal.where(conditions)
       end
     end
 
     def immortal_delete_all(conditions = nil)
-      unscoped.where(conditions).update_all(deleted: 1)
+      unscoped.where(conditions).update_all(COLUMN_NAME => 1)
     end
 
     def delete_all!(*args)
@@ -86,22 +76,28 @@ module Immortal
     end
 
     def undeleted_clause_sql
-      unscoped.where(deleted: false).constraints.first.to_sql
+      unscoped.mortal.constraints.first.to_sql
     end
 
     def deleted_clause_sql
-      unscoped.where(arel_table[:deleted].eq(true)).constraints.first.to_sql
+      unscoped.where(arel_table[COLUMN_NAME].eq(true)).constraints.first.to_sql
     end
   end
 
   module InstanceMethods
     def self.included(base)
-      unless base.table_exists? && base.columns_hash['deleted'] && !base.columns_hash['deleted'].null
-        Kernel.warn "[Immortal] The 'deleted' column in #{base} is nullable, change the column to not accept NULL values"
+      unless base.table_exists? && base.columns_hash[COLUMN_NAME] && !base.columns_hash[COLUMN_NAME].null
+        Kernel.warn(
+          "[Immortal] The '#{COLUMN_NAME}' column in #{base} is nullable, " \
+          'change the column to not accept NULL values'
+        )
       end
 
       base.class_eval do
-        default_scope { -> { where(deleted: false) } } if arel_table[:deleted]
+        scope(:mortal, -> { where(COLUMN_NAME => false) })
+        scope(:immortal, -> { where(COLUMN_NAME => true) })
+
+        default_scope { -> { mortal } } if arel_table[COLUMN_NAME]
 
         alias_method :mortal_destroy, :destroy
         alias_method :destroy, :immortal_destroy
@@ -121,19 +117,32 @@ module Immortal
     end
 
     def destroy_without_callbacks
-      self.class.unscoped.where(id: id).update_all(deleted: true, updated_at: current_time_from_proper_timezone)
+      scoped_record.update_all(
+        COLUMN_NAME => true,
+        updated_at: current_time_from_proper_timezone
+      )
+
       @destroyed = true
       reload
       freeze
     end
 
     def recover!
-      self.class.unscoped.where(id: id).update_all(deleted: false, updated_at: current_time_from_proper_timezone)
+      scoped_record.update_all(
+        COLUMN_NAME => false,
+        updated_at: current_time_from_proper_timezone
+      )
+
       @destroyed = false
       reload
     end
 
     private
+
+    # @return [ActiveRecord::Relation]
+    def scoped_record
+      self.class.unscoped.where(id: id)
+    end
 
     def current_time_from_proper_timezone
       ActiveRecord::Base.default_timezone == :utc ? Time.now.utc : Time.now
