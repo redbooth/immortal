@@ -47,25 +47,6 @@ If you want to improve immortal
 3. Push it! `git push origin my_feature`
 4. Open a pull request
 
-## CHANGELOG
-
-- 1.0.5 Use separate internal accessors for with/only_deleted singular association readers
-- 1.0.4 Extract with_deleted singular assoc readers to separate module
-- 1.0.3 Added back feature where using immortal finders doesn't unscope association scopes.
-- 1.0.2 Added with/only_deleted singular association readers (see specs)
-- 1.0.1 Made compatible with Rails 3.1.X
-- 1.0.0 Changed the API, made it compatible with Rails 3.1, removed
-  functionality
-- 0.1.6 Fixing immortal issue 2: with_deleted breaks associations
-- 0.1.5 Add "without deleted" scope to join model by overriding HasManyThroughAssociation#construct_conditions
-    rather than simply adding to has_many conditions.
-- 0.1.4 fix bug where ALL records of any dependent associations were
-  immortally deleted if assocation has :dependant => :delete_all option
-  set
-- 0.1.3 fix bug where join model is not immortal
-- 0.1.2 fix loading issue when the `deleted` column doesn't exist (or even the table)
-- 0.1.1 fix behavior with `has_many :through` associations
-
 ## License
 
 (The MIT License)
