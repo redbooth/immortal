@@ -10,6 +10,9 @@ module Immortal
     base.send :include, BelongsTo
 
     base.class_eval do
+      scope(:mortal, -> { where(COLUMN_NAME => false) })
+      scope(:immortal, -> { where(COLUMN_NAME => true) })
+
       class << self
         alias_method :mortal_delete_all, :delete_all
         alias_method :delete_all, :immortal_delete_all
@@ -40,7 +43,7 @@ module Immortal
     end
 
     def exists?(id = false)
-      where(deleted: false).exists?(id)
+      mortal.exists?(id)
     end
 
     def count_with_deleted(*args)
@@ -51,7 +54,7 @@ module Immortal
 
     def count_only_deleted(*args)
       without_default_scope do
-        where(deleted: true).count(*args)
+        immortal.count(*args)
       end
     end
 
@@ -63,12 +66,12 @@ module Immortal
 
     def where_only_deleted(conditions)
       without_default_scope do
-        where(deleted: true).where(conditions)
+        immortal.where(conditions)
       end
     end
 
     def immortal_delete_all(conditions = nil)
-      unscoped.where(conditions).update_all(deleted: 1)
+      unscoped.where(conditions).update_all(COLUMN_NAME => 1)
     end
 
     def delete_all!(*args)
@@ -76,22 +79,25 @@ module Immortal
     end
 
     def undeleted_clause_sql
-      unscoped.where(deleted: false).constraints.first.to_sql
+      unscoped.mortal.constraints.first.to_sql
     end
 
     def deleted_clause_sql
-      unscoped.where(arel_table[:deleted].eq(true)).constraints.first.to_sql
+      unscoped.where(arel_table[COLUMN_NAME].eq(true)).constraints.first.to_sql
     end
   end
 
   module InstanceMethods
     def self.included(base)
       unless base.table_exists? && base.columns_hash[COLUMN_NAME] && !base.columns_hash[COLUMN_NAME].null
-        Kernel.warn "[Immortal] The 'deleted' column in #{base} is nullable, change the column to not accept NULL values"
+        Kernel.warn(
+          "[Immortal] The '#{COLUMN_NAME}' column in #{base} is nullable, " \
+          'change the column to not accept NULL values'
+        )
       end
 
       base.class_eval do
-        default_scope { -> { where(deleted: false) } } if arel_table[:deleted]
+        default_scope { -> { mortal } } if arel_table[COLUMN_NAME]
 
         alias_method :mortal_destroy, :destroy
         alias_method :destroy, :immortal_destroy
@@ -111,19 +117,32 @@ module Immortal
     end
 
     def destroy_without_callbacks
-      self.class.unscoped.where(id: id).update_all(deleted: true, updated_at: current_time_from_proper_timezone)
+      scoped_record.update_all(
+        COLUMN_NAME => true,
+        updated_at: current_time_from_proper_timezone
+      )
+
       @destroyed = true
       reload
       freeze
     end
 
     def recover!
-      self.class.unscoped.where(id: id).update_all(deleted: false, updated_at: current_time_from_proper_timezone)
+      scoped_record.update_all(
+        COLUMN_NAME => false,
+        updated_at: current_time_from_proper_timezone
+      )
+
       @destroyed = false
       reload
     end
 
     private
+
+    # @return [ActiveRecord::Relation]
+    def scoped_record
+      self.class.unscoped.where(id: id)
+    end
 
     def current_time_from_proper_timezone
       ActiveRecord::Base.default_timezone == :utc ? Time.now.utc : Time.now
