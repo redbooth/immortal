@@ -1,5 +1,6 @@
 require 'immortal/belongs_to'
 
+# Include +Immortal+ module to activate soft deleted on your model.
 module Immortal
   COLUMN_NAME = 'deleted'.freeze
 

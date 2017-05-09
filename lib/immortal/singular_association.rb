@@ -1,4 +1,6 @@
 module Immortal
+  # Mixin to provide the singular association readers for +_only_deleted+ and
+  # +_with_deleted+.
   module SingularAssociation
     attr_reader :with_deleted_target, :only_deleted_target
 

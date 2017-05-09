@@ -1,7 +1,8 @@
 require 'immortal/belongs_to_builder'
 
-# Include this to add {with/only}_deleted_ accessors for singular associations
 module Immortal
+  # Includes this to add +association_{with/only}_deleted+ accessors for belongs_to
+  # associations.
   module BelongsTo
     def self.included(base)
       base.class_eval do
