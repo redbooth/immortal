@@ -1,0 +1,30 @@
+version: 2
+
+references:
+
+  ruby_image: &ruby_image
+    circleci/ruby:2.3.3
+
+  install_bundler: &install_bundler
+    run:
+      name: Install Bundler
+      command: |
+        gem install bundler
+        gem cleanup bundler
+
+  install_gems: &install_gems
+    run:
+      name: Install Gems
+      command: bundle install
+
+jobs:
+  build:
+    docker:
+      - image: *ruby_image
+    steps:
+      - checkout
+      - *install_bundler
+      - *install_gems
+      - run:
+          name: Run Tests
+          command: bundle exec rspec
