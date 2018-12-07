@@ -91,9 +91,16 @@ RSpec.describe Immortal do
     describe '#destroy' do
       subject(:destroy_model) { model.destroy }
 
+      before { model.update(updated_at: 1.minute.ago) }
+
       it 'does not delete from the database' do
         expect { destroy_model }
           .not_to change(ImmortalModel, :count_with_deleted)
+      end
+
+      it 'changes deleted' do
+        expect { destroy_model }
+          .to change(model, :deleted)
       end
 
       it 'changes updated_at' do
@@ -208,14 +215,20 @@ RSpec.describe Immortal do
     let(:model_id) { model.id }
     let(:deleted_model) { ImmortalModel.where_with_deleted(id: model_id).first }
 
-    before { model.destroy }
+    before do
+      model.destroy
+      deleted_model.update(updated_at: 1.minute.ago)
+    end
 
     it { is_expected.not_to be_frozen }
     it { is_expected.not_to be_changed }
 
+    it 'changes deleted' do
+      expect { recover_model }.to change(deleted_model, :deleted)
+    end
+
     it 'changes updated_at' do
-      expect { recover_model }
-        .to change(deleted_model, :updated_at)
+      expect { recover_model }.to change(deleted_model, :updated_at)
     end
 
     it 'can be found' do
