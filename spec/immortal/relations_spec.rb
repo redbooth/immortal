@@ -40,13 +40,13 @@ RSpec.describe Immortal do
     end
 
     context 'on a join query' do
-      subject { ImmortalNode.joins(:immortal_models).to_sql }
+      subject { ImmortalNode.joins(:immortal_models).to_sql.gsub(/\"|\`/, '')}
 
       let(:expected_join) do
-        'INNER JOIN "immortal_joins" ON "immortal_joins"."immortal_node_id" = "immortal_nodes"."id"'
+        'INNER JOIN immortal_joins ON immortal_joins.immortal_node_id = immortal_nodes.id'
       end
       let(:expected_model_join) do
-        'INNER JOIN "immortal_models" ON "immortal_models"."id" = "immortal_joins"."immortal_model_id"'
+        'INNER JOIN immortal_models ON immortal_models.id = immortal_joins.immortal_model_id'
       end
 
       it { is_expected.to include(expected_join) }

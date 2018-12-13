@@ -5,6 +5,19 @@ references:
   ruby_image: &ruby_image
     circleci/ruby:2.3.3
 
+  mysql_container_config: &mysql_container_config
+    docker:
+      - image: *ruby_image
+        environment:
+          DB_HOST=127.0.0.1
+      - image: circleci/mysql:5.6.39
+        environment:
+          MYSQL_DATABASE=immortal_db
+
+  sqlite_container_config: &sqlite_container_config
+    docker:
+      - image: *ruby_image
+
   install_bundler: &install_bundler
     run:
       name: Install Bundler
@@ -17,14 +30,40 @@ references:
       name: Install Gems
       command: bundle install
 
+  appraisal_install: &appraisal_install
+    run:
+      name: Appraisal Install
+      command: bundle exec appraisal install
+
+  appraisal_rspec: &appraisal_rspec
+    run:
+      name: Appraisal RSpec
+      command: bundle exec appraisal rspec
+
 jobs:
-  build:
-    docker:
-      - image: *ruby_image
+  test_on_mysql:
+    <<: *mysql_container_config
+    environment:
+      - CONFIG_MYSQL=true
+      - DB_PORT=3306
     steps:
       - checkout
       - *install_bundler
       - *install_gems
-      - run:
-          name: Run Tests
-          command: bundle exec rspec
+      - *appraisal_install
+      - *appraisal_rspec
+  test_on_sqlite:
+    <<: *sqlite_container_config
+    steps:
+      - checkout
+      - *install_bundler
+      - *install_gems
+      - *appraisal_install
+      - *appraisal_rspec
+
+workflows:
+  version: 2
+  commit:
+    jobs:
+      - test_on_mysql
+      - test_on_sqlite

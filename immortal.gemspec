@@ -23,10 +23,11 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = %w[lib]
 
-  spec.add_dependency 'activerecord', '~> 4.1.0'
+  spec.add_dependency 'activerecord', '>= 4.1.0', '< 5.1'
+  spec.add_development_dependency 'appraisal'
   spec.add_development_dependency 'rspec', '~> 3.6.0'
   spec.add_development_dependency 'rspec-its'
-  spec.add_development_dependency 'sqlite3'
+  spec.add_development_dependency 'sqlite3' unless ENV['CONFIG_MYSQL']
   spec.add_development_dependency 'byebug'
   spec.add_development_dependency 'rake', '~> 10.0'
   spec.add_development_dependency 'rubocop'

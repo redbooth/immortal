@@ -24,17 +24,9 @@ module Immortal
     end
 
     def without_default_scope
-      new_scope = unscoped
-      our_scope = current_scope || unscoped
+      where_clause = (current_scope || unscoped).where_values_hash.except(COLUMN_NAME)
 
-      non_immortal_constraints_sql = our_scope.arel.constraints.to_a.map do |constraint|
-        constraint.to_sql.split('AND').reject { |clause| clause.include?(COLUMN_NAME) }
-      end.flatten.join(' AND ')
-
-      new_scope = new_scope.merge(our_scope.except(:where))
-      new_scope = new_scope.where(non_immortal_constraints_sql)
-
-      unscoped.merge(new_scope).scoping do
+      unscoped.where(where_clause).scoping do
         yield
       end
     end
@@ -145,7 +137,7 @@ module Immortal
     end
 
     def current_time_from_proper_timezone
-      ActiveRecord::Base.default_timezone == :utc ? Time.now.utc : Time.now
+      ActiveRecord::Base.default_timezone == :utc ? Time.now.utc : Time.current
     end
   end
 end
